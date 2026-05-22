@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Hermes ⟷ Sisyphus 自動化流程 + Skill</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Zilla+Slab:wght@400;500;600;700&family=Archivo:wght@400;600;800;900&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#1a1714;
+    --paper:#f4efe6;
+    --paper2:#ebe3d5;
+    --line:#2a2520;
+    --rust:#b5402a;
+    --rust2:#8f2f1f;
+    --gold:#c98a2b;
+    --sage:#5e7553;
+    --teal:#2f5d63;
+    --shadow:rgba(26,23,20,.18);
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth}
+  body{
+    background:var(--paper);
+    color:var(--ink);
+    font-family:'Zilla Slab',Georgia,serif;
+    line-height:1.55;
+    background-image:
+      radial-gradient(circle at 12% 18%, rgba(201,138,43,.06), transparent 40%),
+      radial-gradient(circle at 88% 82%, rgba(47,93,99,.05), transparent 45%);
+  }
+  .grain{position:fixed;inset:0;pointer-events:none;z-index:99;opacity:.04;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence baseFrequency='.9' numOctaves='3'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");}
+  .wrap{max-width:1080px;margin:0 auto;padding:0 24px}
+
+  /* HEADER */
+  header{padding:64px 0 40px;border-bottom:3px solid var(--line);position:relative}
+  .kicker{font-family:'Space Mono',monospace;font-size:12px;letter-spacing:.32em;text-transform:uppercase;color:var(--rust);font-weight:700}
+  h1{font-family:'Archivo',sans-serif;font-weight:900;font-size:clamp(38px,7vw,76px);line-height:.95;letter-spacing:-.02em;margin:14px 0 8px;text-transform:uppercase}
+  h1 .arrow{color:var(--rust);display:inline-block;transform:translateY(-4px)}
+  .sub{font-size:18px;max-width:640px;color:#4a4138}
+  .badges{display:flex;gap:10px;flex-wrap:wrap;margin-top:22px}
+  .badge{font-family:'Space Mono',monospace;font-size:11px;letter-spacing:.08em;border:2px solid var(--line);padding:6px 12px;background:var(--paper2);font-weight:700}
+  .badge.r{border-color:var(--rust);color:var(--rust)}
+
+  section{padding:56px 0;border-bottom:2px solid rgba(42,37,32,.18)}
+  .sec-num{font-family:'Space Mono',monospace;font-size:13px;color:var(--gold);font-weight:700;letter-spacing:.2em}
+  h2{font-family:'Archivo',sans-serif;font-weight:800;font-size:clamp(26px,4vw,40px);letter-spacing:-.01em;margin:6px 0 22px;text-transform:uppercase;line-height:1}
+
+  /* IDENTITY CARDS */
+  .ids{display:grid;grid-template-columns:1.4fr 1fr;gap:20px}
+  @media(max-width:760px){.ids{grid-template-columns:1fr}}
+  .idcard{border:3px solid var(--line);padding:26px;position:relative;background:var(--paper2);box-shadow:6px 6px 0 var(--shadow)}
+  .idcard.hermes{background:#efe7d8}
+  .idcard.sisy{background:#e6e9e0}
+  .idtag{font-family:'Space Mono',monospace;font-size:11px;letter-spacing:.2em;text-transform:uppercase;font-weight:700;padding:4px 10px;display:inline-block;margin-bottom:12px}
+  .idtag.h{background:var(--rust);color:var(--paper)}
+  .idtag.s{background:var(--teal);color:var(--paper)}
+  .idcard h3{font-family:'Archivo',sans-serif;font-weight:900;font-size:30px;margin-bottom:4px;letter-spacing:-.01em}
+  .idcard .role{font-family:'Space Mono',monospace;font-size:13px;color:var(--rust2);margin-bottom:16px;font-weight:700}
+  .idcard ul{list-style:none}
+  .idcard li{padding:7px 0 7px 26px;position:relative;font-size:15.5px;border-top:1px dashed rgba(42,37,32,.25)}
+  .idcard li:first-of-type{border-top:none}
+  .idcard li::before{content:"▸";position:absolute;left:4px;color:var(--rust);font-weight:700}
+  .idcard.sisy li::before{color:var(--teal)}
+
+  /* FLOW */
+  .flow{display:flex;flex-direction:column;gap:0;counter-reset:step}
+  .step{display:grid;grid-template-columns:64px 1fr;gap:18px;position:relative;padding-bottom:8px}
+  .step .rail{display:flex;flex-direction:column;align-items:center}
+  .step .dot{counter-increment:step;width:46px;height:46px;border:3px solid var(--line);border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'Archivo',sans-serif;font-weight:900;font-size:19px;background:var(--paper);flex-shrink:0;z-index:2}
+  .step .dot.h{background:var(--rust);color:var(--paper);border-color:var(--rust2)}
+  .step .dot.s{background:var(--teal);color:var(--paper);border-color:#234348}
+  .step .dot::before{content:counter(step)}
+  .step .conn{flex:1;width:3px;background:repeating-linear-gradient(var(--line) 0 6px,transparent 6px 12px);min-height:24px}
+  .step:last-child .conn{display:none}
+  .step .body{padding-bottom:22px}
+  .step .who{font-family:'Space Mono',monospace;font-size:10.5px;letter-spacing:.18em;font-weight:700;text-transform:uppercase;padding:3px 8px;display:inline-block;margin-bottom:7px}
+  .who.h{background:var(--rust);color:var(--paper)}
+  .who.s{background:var(--teal);color:var(--paper)}
+  .step h4{font-family:'Archivo',sans-serif;font-weight:800;font-size:20px;margin-bottom:5px;letter-spacing:-.01em}
+  .step p{font-size:15px;color:#4a4138;max-width:680px}
+  .step .detail{margin-top:9px;background:var(--paper2);border-left:4px solid var(--gold);padding:10px 14px;font-size:13.5px;font-family:'Space Mono',monospace;line-height:1.6}
+  .loopback{grid-template-columns:64px 1fr}
+  .loopback .dot{background:var(--gold);color:var(--ink);border-color:#a06f1f}
+  .loopback .dot::before{content:"↻";counter-increment:none;font-size:24px}
+
+  /* 3 SOURCES */
+  .sources{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:6px}
+  @media(max-width:760px){.sources{grid-template-columns:1fr}}
+  .src{border:3px solid var(--line);padding:20px;background:var(--paper2);box-shadow:4px 4px 0 var(--shadow)}
+  .src .n{font-family:'Archivo',sans-serif;font-weight:900;font-size:34px;color:var(--rust);line-height:1}
+  .src h4{font-family:'Archivo',sans-serif;font-weight:800;font-size:17px;margin:8px 0 6px}
+  .src p{font-size:13.5px;color:#4a4138}
+  .src code{font-family:'Space Mono',monospace;font-size:12px;background:var(--ink);color:var(--gold);padding:2px 6px}
+
+  /* TODO STATES */
+  .states{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:8px}
+  .pill{font-family:'Space Mono',monospace;font-weight:700;font-size:13px;padding:8px 16px;border:3px solid var(--line);text-transform:uppercase;letter-spacing:.05em}
+  .pill.new{background:var(--gold);color:var(--ink)}
+  .pill.pending{background:#e2cf7a;color:var(--ink)}
+  .pill.complete{background:var(--sage);color:var(--paper)}
+  .st-arrow{font-family:'Archivo',sans-serif;font-weight:900;font-size:22px;color:var(--rust)}
+  .note{font-size:14px;margin-top:14px;color:#4a4138;font-style:italic}
+
+  /* PROMPT BLOCK */
+  .promptbox{background:var(--ink);color:#e8e0d2;border:3px solid var(--line);box-shadow:8px 8px 0 var(--shadow);position:relative;overflow:hidden}
+  .promptbar{display:flex;align-items:center;justify-content:space-between;background:#0f0d0b;padding:12px 18px;border-bottom:2px solid #332c24}
+  .promptbar .ttl{font-family:'Space Mono',monospace;font-size:12px;letter-spacing:.15em;color:var(--gold);font-weight:700}
+  .copybtn{font-family:'Space Mono',monospace;font-size:11px;font-weight:700;letter-spacing:.1em;background:var(--rust);color:var(--paper);border:none;padding:7px 16px;cursor:pointer;text-transform:uppercase;transition:.15s}
+  .copybtn:hover{background:var(--gold);color:var(--ink)}
+  .copybtn.done{background:var(--sage)}
+  pre{font-family:'Space Mono',monospace;font-size:12.5px;line-height:1.65;padding:22px;overflow-x:auto;white-space:pre-wrap;word-break:break-word}
+  pre .c{color:#7d8f6e}
+  pre .k{color:var(--gold);font-weight:700}
+  pre .v{color:#d98a6a}
+
+  /* TELEGRAM FORMAT */
+  .tg{background:#17212b;border:3px solid var(--line);padding:0;box-shadow:6px 6px 0 var(--shadow);max-width:480px}
+  .tghead{background:#202b36;padding:12px 18px;font-family:'Space Mono',monospace;font-size:12px;color:#6ab3f3;letter-spacing:.1em;border-bottom:1px solid #0d1620}
+  .tgbody{padding:18px;color:#dfe6ec;font-family:'Space Mono',monospace;font-size:13px;line-height:1.7}
+  .tgbody .lbl{color:#6ab3f3}
+  .tgbody .ok{color:#7bcf8a}
+  .tgbody .warn{color:#e0a458}
+
+  footer{padding:48px 0 64px;text-align:center}
+  footer p{font-family:'Space Mono',monospace;font-size:12px;color:#7a7060;letter-spacing:.1em}
+  .mono{font-family:'Space Mono',monospace}
+</style>
+</head>
+<body>
+<div class="grain"></div>
+
+<header>
+  <div class="wrap">
+    <div class="kicker">Autonomous Code Loop · Skill Spec v1</div>
+    <h1>HERMES <span class="arrow">⟶</span> SISYPHUS</h1>
+    <p class="sub">一個身份 (Hermes) 做晒 PM + Product Owner + QA + Reviewer，Sisyphus 淨係做 worker。動態 prompt 跟住三個 source 變，所有狀態入 DB，最後一條精簡 Telegram 通知收尾。</p>
+    <div class="badges">
+      <span class="badge r">Hermes = PM + PO + QA</span>
+      <span class="badge">Sisyphus = Worker</span>
+      <span class="badge">Dynamic Prompt</span>
+      <span class="badge">SQLite TODO DB</span>
+      <span class="badge">Telegram Notify</span>
+    </div>
+  </div>
+</header>
+
+<!-- 01 身份 -->
+<section>
+  <div class="wrap">
+    <div class="sec-num">01 / 身份分工</div>
+    <h2>邊個做乜</h2>
+    <div class="ids">
+      <div class="idcard hermes">
+        <span class="idtag h">YOU · HERMES</span>
+        <h3>Hermes</h3>
+        <div class="role">Project Manager + Product Owner + QA + Reviewer</div>
+        <ul>
+          <li>檢查 session 同 Sisyphus 是否存在（Sisyphus 自己保證唔到自己存在）</li>
+          <li>讀同分析代碼 — 親自睇文件夾，唔靠 worker 自評</li>
+          <li>生成 / 更新 TODO，全部寫入 DB</li>
+          <li>用 set-buffer 派任務出去</li>
+          <li>驗證 Sisyphus 嘅成果（回應 + 代碼 + user-intention.md + idea.md）</li>
+          <li>親自 commit / push（最可靠，唔受 session 中斷影響）</li>
+          <li>維護 user-intention.md & idea.md，可加新 feature / safety / 效能 idea</li>
+          <li>發 Telegram 精簡通知</li>
+        </ul>
+      </div>
+      <div class="idcard sisy">
+        <span class="idtag s">SESSION · WORKER</span>
+        <h3>Sisyphus</h3>
+        <div class="role">Worker（OpenCode agent）</div>
+        <ul>
+          <li>只執行 Hermes 派落嚟嘅明確任務</li>
+          <li>修復指定 issue</li>
+          <li>修改代碼</li>
+          <li>總結今次改咗乜（畀 Hermes 驗）</li>
+          <li>唔做 review、唔判斷自己、唔決定優先級</li>
+        </ul>
+        <p class="note">⚠️ Sisyphus review 自己 = 永遠話「冇問題」。所以 review 一定由 Hermes 做。</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 02 三個 source -->
+<section>
+  <div class="wrap">
+    <div class="sec-num">02 / 動態 Prompt 來源</div>
+    <h2>Hermes 每次睇三樣嘢</h2>
+    <p class="sub" style="margin-bottom:24px">每次 cron 醒嚟，Hermes 唔係盲派固定 prompt，而係先讀呢三個 source，再 <em>動態</em> 砌返今次要派嘅任務。</p>
+    <div class="sources">
+      <div class="src">
+        <div class="n">1</div>
+        <h4>Sisyphus 回應</h4>
+        <p>TMUX <code>pane</code> capture — 佢上次做咗乜、有冇 error、係咪 idle 緊等任務。</p>
+      </div>
+      <div class="src">
+        <div class="n">2</div>
+        <h4>TODO List (DB)</h4>
+        <p>SQLite <code>progress.db</code> — 邊啲 issue 係 new / pending / complete，優先級。</p>
+      </div>
+      <div class="src">
+        <div class="n">3</div>
+        <h4>代碼 + 意圖檔</h4>
+        <p>親自睇本次修正代碼區、<code>user-intention.md</code>、<code>idea.md</code> 確認真係改咗。</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 03 主流程 -->
+<section>
+  <div class="wrap">
+    <div class="sec-num">03 / 完整 Loop</div>
+    <h2>每個 Cron Cycle 行嘅嘢</h2>
+    <div class="flow">
+      <div class="step">
+        <div class="rail"><div class="dot h"></div><div class="conn"></div></div>
+        <div class="body">
+          <span class="who h">Hermes</span>
+          <h4>檢查存活 + 讀三個 Source</h4>
+          <p>確認 session / Sisyphus 存在（唔存在就重啟）。Capture pane、讀 progress.db、睇代碼文件夾 + user-intention.md + idea.md。</p>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="rail"><div class="dot h"></div><div class="conn"></div></div>
+        <div class="body">
+          <span class="who h">Hermes</span>
+          <h4>驗證上一輪成果</h4>
+          <p>對比三件事：① Sisyphus 嘅回應 ② 代碼文件夾本次修正區係咪真係改咗 ③ 改動合唔合理、有冇符合 intention。</p>
+          <div class="detail">改得啱 → 該 TODO 轉 <b>complete</b><br>改得有問題 / 冇改 → 轉返 <b>pending</b></div>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="rail"><div class="dot h"></div><div class="conn"></div></div>
+        <div class="body">
+          <span class="who h">Hermes</span>
+          <h4>Review 全代碼 + 更新 idea</h4>
+          <p>如果 TODO 冇 pending 任務，Hermes 主動 review 成個 codebase，搵新 issue / 諗新 feature、safety、效能改善。可以更新 idea.md，揀啲寫入 TODO（new）。</p>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="rail"><div class="dot h"></div><div class="conn"></div></div>
+        <div class="body">
+          <span class="who h">Hermes</span>
+          <h4>commit / push 上一輪驗收 OK 嘅嘢</h4>
+          <p>親自喺 terminal commit + push（唔經 Sisyphus session，避免 session 中斷導致 commit 唔到）。</p>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="rail"><div class="dot h"></div><div class="conn"></div></div>
+        <div class="body">
+          <span class="who h">Hermes</span>
+          <h4>砌動態 Prompt + set-buffer 派任務</h4>
+          <p>由 DB 揀最高優先級嘅 pending / new 任務，砌成明確「修復 X」指令，用 <span class="mono">tmux set-buffer + paste-buffer</span> 派畀 Sisyphus。同時將該任務標記為 pending（in-progress）。</p>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="rail"><div class="dot s"></div><div class="conn"></div></div>
+        <div class="body">
+          <span class="who s">Sisyphus</span>
+          <h4>執行修復 + 總結</h4>
+          <p>分析 → 修改代碼 → 輸出「Modified Files: +X −Y」同改動摘要。唔做判斷，只做嘢。</p>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="rail"><div class="dot h"></div><div class="conn"></div></div>
+        <div class="body">
+          <span class="who h">Hermes</span>
+          <h4>發 Telegram 精簡通知</h4>
+          <p>用固定格式發到指定 chat id，唔需要詳細解釋。</p>
+        </div>
+      </div>
+
+      <div class="step loopback">
+        <div class="rail"><div class="dot"></div></div>
+        <div class="body">
+          <span class="who h" style="background:var(--gold);color:var(--ink)">Loop</span>
+          <h4>下個 Cron Cycle → 返 Step 1</h4>
+          <p>下次醒返，先驗 Sisyphus 今次改嘅嘢，再繼續。所有 review + 新 idea 基本上全部由 Hermes 做。</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 04 TODO 狀態 -->
+<section>
+  <div class="wrap">
+    <div class="sec-num">04 / TODO 狀態流轉</div>
+    <h2>DB 入面點變</h2>
+    <div class="states">
+      <span class="pill new">NEW</span>
+      <span class="st-arrow">→</span>
+      <span class="pill pending">PENDING</span>
+      <span class="st-arrow">→</span>
+      <span class="pill complete">COMPLETE</span>
+    </div>
+    <p class="note">Hermes 發現 issue → 寫入 <b>NEW</b>。派咗畀 Sisyphus 做緊 → <b>PENDING</b>。驗收 OK → <b>COMPLETE</b>；驗收唔 OK / 做漏 → 打返 <b>PENDING</b>。每次睇 DB 就知今次該做乜。</p>
+  </div>
+</section>
+
+<!-- 05 Telegram 格式 -->
+<section>
+  <div class="wrap">
+    <div class="sec-num">05 / Telegram 通知格式</div>
+    <h2>固定格式（精簡）</h2>
+    <p class="sub" style="margin-bottom:22px">每 cycle 完成後發一條，唔需要詳細，只係畀你知狀態。下面係範本 — 你可以喺 prompt 入面改 emoji / 字眼。</p>
+    <div class="tg">
+      <div class="tghead">▶ Telegram · chat_id: -100xxxxxxxxxx</div>
+      <div class="tgbody">
+<span class="lbl">🍼 [Project]</span> · <span class="mono">21:30</span><br>
+<span class="ok">✅ Done:</span> #12 fix hardcoded email<br>
+<span class="warn">🔧 Dispatched:</span> #14 add CV auth<br>
+<span class="lbl">📋 TODO:</span> 2 pending · 1 new<br>
+<span class="lbl">📦 Commit:</span> 4470bf3 → pushed
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 06 THE PROMPT -->
+<section style="border-bottom:none">
+  <div class="wrap">
+    <div class="sec-num">06 / Skill Prompt</div>
+    <h2>直接 Copy 落 Cron / Skill</h2>
+    <p class="sub" style="margin-bottom:22px">呢個就係 Hermes 每次醒返要跟嘅 skill。Copy 落 cron job prompt 或者存做 <span class="mono">skills/autoloop/SKILL.md</span>。記得改 <span class="mono">[佔位符]</span>。</p>
+    <div class="promptbox">
+      <div class="promptbar">
+        <span class="ttl">SKILL.md — hermes-autoloop</span>
+        <button class="copybtn" onclick="copyPrompt()">⧉ COPY</button>
+      </div>
+<pre id="prompt"><span class="c"># ROLE — 你就係 Hermes。你同時係呢三個身份，全部都係你：</span>
+<span class="c">#   Project Manager + Product Owner + QA / Reviewer</span>
+<span class="c"># Sisyphus 係 session 入面嘅 Worker，淨係執行你派嘅任務。</span>
+<span class="c"># Sisyphus 唔可以保證自己存在、唔可以 review 自己、唔可以決定優先級。</span>
+<span class="c"># 所有 review、判斷、commit、新 idea 都係你 (Hermes) 做。</span>
+
+<span class="c"># ===== 變數（改我）=====</span>
+<span class="k">PROJECT</span>      = <span class="v">"[項目名 e.g. Jobble Baby]"</span>
+<span class="k">SESSION</span>      = <span class="v">"[tmux session e.g. jobble-baby]"</span>
+<span class="k">REPO</span>         = <span class="v">"[代碼路徑 e.g. /mnt/f/codebase/xxx]"</span>
+<span class="k">DB</span>           = <span class="v">"[progress.db 路徑]"</span>
+<span class="k">TG_CHAT_ID</span>   = <span class="v">"[Telegram chat id e.g. -100xxxxxxxxxx]"</span>
+<span class="k">TG_TOKEN</span>     = <span class="v">"[bot token]"</span>
+
+<span class="c"># ===== 每個 CRON CYCLE 嚴格按步行 =====</span>
+
+<span class="k">STEP 1 — 檢查存活 + 讀三個 SOURCE（你做）</span>
+  - 確認 SESSION 同 Sisyphus 存在；唔存在 → 喺 REPO cd 入去重新開 session + 啟動 worker。
+  - SOURCE A：tmux capture-pane 睇 Sisyphus 上次回應（做咗乜 / error / 係咪 idle）。
+  - SOURCE B：讀 DB 嘅 TODO（status: new / pending / complete + 優先級）。
+  - SOURCE C：親自睇 REPO 本次修正代碼區、user-intention.md、idea.md。
+
+<span class="k">STEP 2 — 驗證上一輪成果（你做）</span>
+  對比：① Sisyphus 回應  ② 代碼文件夾本次改動係咪真係改咗、合唔合理
+       ③ 有冇符合 user-intention.md。
+  - 改得啱      → 該 TODO 轉 complete
+  - 做漏 / 有問題 → 該 TODO 轉返 pending
+
+<span class="k">STEP 3 — REVIEW + 更新 IDEA（你做）</span>
+  - 如果 DB 冇 pending 任務 → 你主動 review 成個 codebase 搵新 issue，
+    順便諗新 feature / safety / 效能改善。
+  - 可以更新 idea.md；揀啲值得做嘅寫入 DB（status = new）。
+
+<span class="k">STEP 4 — COMMIT / PUSH（你做，唔經 Sisyphus）</span>
+  - 上一輪驗收 complete 嘅改動，你喺 terminal 直接：
+    git add -A && git commit -m "..." && git push
+  - 理由：Sisyphus session 可能喺 commit 前中斷，你做最可靠。
+
+<span class="k">STEP 5 — 砌動態 PROMPT + 派任務（你做）</span>
+  - 由 DB 揀最高優先級嘅 pending（或啱啱寫嘅 new）任務。
+  - 砌成明確、單一目標嘅指令，例如：
+      "修復 [file]:[line] [issue]，改完輸出 Modified Files 摘要。唔好 review，淨係改。"
+  - 用 set-buffer 派出去：
+      tmux set-buffer "<動態 prompt>"
+      tmux paste-buffer -t SESSION
+  - 將該任務標記為 pending（in-progress）。
+
+<span class="k">STEP 6 — Sisyphus 執行（worker）</span>
+  - Sisyphus 修復 → 輸出 "Modified Files: +X -Y" + 改動摘要。
+  - 你唔喺呢步做嘢，等下個 cycle STEP 2 驗。
+
+<span class="k">STEP 7 — 發 TELEGRAM（你做，精簡，固定格式）</span>
+  curl -s "https://api.telegram.org/bot$TG_TOKEN/sendMessage" \
+    -d chat_id="$TG_CHAT_ID" \
+    --data-urlencode text="$(cat &lt;&lt;EOF
+🍼 ${PROJECT} · $(date +%H:%M)
+✅ Done: [今 cycle 驗收 complete 嘅 #id + 標題]
+🔧 Dispatched: [今 cycle 派出去嘅 #id + 標題]
+📋 TODO: [n] pending · [n] new
+📦 Commit: [hash → pushed / none]
+EOF
+)"
+
+<span class="c"># 完 → 下個 cron cycle 返 STEP 1。</span>
+<span class="c"># 鐵規則：</span>
+<span class="c">#  - 永遠唔好叫 Sisyphus "review and report"，佢只做 "fix"。</span>
+<span class="c">#  - Review 同判斷一定你做。</span>
+<span class="c">#  - 冇新改動就唔好重覆派同一個 review task（睇 DB / pane hash）。</span>
+<span class="c">#  - 派出去嘅一律經 set-buffer + paste-buffer。</span></pre>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <p>HERMES AUTOLOOP · ONE IDENTITY, THREE ROLES · SISYPHUS DOES THE WORK</p>
+  </div>
+</footer>
+
+<script>
+function copyPrompt(){
+  const el=document.getElementById('prompt');
+  const txt=el.innerText;
+  navigator.clipboard.writeText(txt).then(()=>{
+    const b=document.querySelector('.copybtn');
+    b.textContent='✓ COPIED';b.classList.add('done');
+    setTimeout(()=>{b.textContent='⧉ COPY';b.classList.remove('done')},1800);
+  });
+}
+</script>
+</body>
+</html>

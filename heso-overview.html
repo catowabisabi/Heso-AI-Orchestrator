@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HESO — Hermes Sisyphus Orchestrator</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,900&family=Archivo:wght@400;600;800;900&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#16130f;--paper:#f3ede1;--paper2:#e8dfcd;
+    --line:#221d17;--rust:#b5402a;--rust2:#8f2f1f;
+    --gold:#c98a2b;--gold2:#a06f1f;--sage:#5e7553;
+    --teal:#2f5d63;--teal2:#234348;--ink2:#0f0c09;--shadow:rgba(22,19,15,.2);
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth}
+  body{background:var(--paper);color:var(--ink);font-family:'Fraunces',Georgia,serif;line-height:1.55}
+  .grain{position:fixed;inset:0;pointer-events:none;z-index:99;opacity:.05;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence baseFrequency='.9' numOctaves='3'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");}
+  .wrap{max-width:1080px;margin:0 auto;padding:0 28px}
+  .mono{font-family:'Space Mono',monospace}
+
+  /* HERO */
+  .hero{background:var(--ink2);color:var(--paper);padding:74px 0 64px;position:relative;overflow:hidden;border-bottom:4px solid var(--rust)}
+  .hero::before{content:"";position:absolute;inset:0;opacity:.55;
+    background:radial-gradient(circle at 18% 22%,rgba(201,138,43,.2),transparent 42%),radial-gradient(circle at 86% 82%,rgba(47,93,99,.24),transparent 46%);}
+  .hero .wrap{position:relative;z-index:2}
+  .tag{font-family:'Space Mono',monospace;font-size:12px;letter-spacing:.34em;text-transform:uppercase;color:var(--gold);font-weight:700}
+  .hero h1{font-family:'Archivo',sans-serif;font-weight:900;font-size:clamp(52px,11vw,118px);line-height:.86;letter-spacing:-.04em;margin:18px 0 4px;text-transform:uppercase}
+  .hero h1 .o{color:var(--rust)}
+  .hero .full{font-family:'Fraunces',serif;font-weight:600;font-size:clamp(17px,2.5vw,25px);color:#d8cdb8;margin:8px 0 24px;font-style:italic}
+  .hero .lede{font-size:clamp(17px,2.2vw,21px);max-width:700px;color:#e8e0d0;line-height:1.5}
+  .hero .pills{display:flex;gap:10px;flex-wrap:wrap;margin-top:32px}
+  .hpill{font-family:'Space Mono',monospace;font-size:11px;letter-spacing:.06em;font-weight:700;border:2px solid #4a3f30;padding:7px 13px;color:#e8e0d0;background:rgba(255,255,255,.03)}
+  .hpill.r{border-color:var(--rust);color:#e89c8a}
+  .hpill.g{border-color:var(--gold);color:#e6bc78}
+
+  section{padding:64px 0;border-bottom:2px solid rgba(34,29,23,.16)}
+  .eyebrow{font-family:'Space Mono',monospace;font-size:12px;color:var(--gold2);font-weight:700;letter-spacing:.22em;text-transform:uppercase}
+  h2{font-family:'Archivo',sans-serif;font-weight:800;font-size:clamp(28px,4.4vw,46px);letter-spacing:-.02em;margin:8px 0 10px;text-transform:uppercase;line-height:.98}
+  .intro{font-size:18px;max-width:720px;color:#4a4034;margin-bottom:34px}
+
+  /* BIG IDEA */
+  .duo{display:grid;grid-template-columns:1fr 60px 1fr;gap:0;align-items:stretch}
+  @media(max-width:780px){.duo{grid-template-columns:1fr;gap:18px}.duo .vs{display:none}}
+  .actor{border:3px solid var(--line);padding:30px;box-shadow:8px 8px 0 var(--shadow);position:relative}
+  .actor.h{background:#efe6d4}.actor.s{background:#e3e7dd}
+  .actor .role{font-family:'Space Mono',monospace;font-size:11px;letter-spacing:.18em;text-transform:uppercase;font-weight:700;padding:5px 11px;display:inline-block;margin-bottom:14px}
+  .actor.h .role{background:var(--rust);color:var(--paper)}
+  .actor.s .role{background:var(--teal);color:var(--paper)}
+  .actor .myth{font-family:'Fraunces',serif;font-style:italic;font-size:14px;color:#6e6151;margin-bottom:2px}
+  .actor h3{font-family:'Archivo',sans-serif;font-weight:900;font-size:36px;letter-spacing:-.02em;margin-bottom:14px}
+  .actor ul{list-style:none}
+  .actor li{padding:8px 0 8px 24px;position:relative;font-size:15.5px;border-top:1px dashed rgba(34,29,23,.22)}
+  .actor li:first-child{border-top:none}
+  .actor li::before{content:"◆";position:absolute;left:2px;font-size:11px;color:var(--rust);top:11px}
+  .actor.s li::before{color:var(--teal)}
+  .vs{display:flex;align-items:center;justify-content:center;font-family:'Archivo',sans-serif;font-weight:900;font-size:26px;color:var(--gold)}
+
+  /* LOOP */
+  .loop{display:grid;grid-template-columns:repeat(6,1fr);gap:0;margin-top:8px}
+  @media(max-width:880px){.loop{grid-template-columns:repeat(2,1fr);gap:14px}}
+  .lstep{border:3px solid var(--line);background:var(--paper2);padding:18px 14px;position:relative;box-shadow:5px 5px 0 var(--shadow)}
+  .lstep .ln{font-family:'Archivo',sans-serif;font-weight:900;font-size:26px;color:var(--rust);line-height:1}
+  .lstep h4{font-family:'Archivo',sans-serif;font-weight:800;font-size:14.5px;margin:6px 0 4px;text-transform:uppercase;letter-spacing:-.01em}
+  .lstep p{font-size:13px;color:#4a4034;line-height:1.4}
+  .lstep .who{font-family:'Space Mono',monospace;font-size:9px;font-weight:700;letter-spacing:.1em;padding:2px 6px;position:absolute;top:-11px;right:10px}
+  .who.h{background:var(--rust);color:var(--paper)}.who.s{background:var(--teal);color:var(--paper)}
+  .loopnote{font-family:'Fraunces',serif;font-style:italic;font-size:16px;color:#6e6151;margin-top:22px;text-align:center}
+
+  /* MEMORY */
+  .mem{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
+  @media(max-width:780px){.mem{grid-template-columns:1fr}}
+  .mcard{border:3px solid var(--line);padding:24px;box-shadow:6px 6px 0 var(--shadow)}
+  .mcard.a{background:#efe6d4}.mcard.b{background:#e3e7dd}.mcard.c{background:#ede2cc}
+  .mcard .ic{font-size:30px;line-height:1}
+  .mcard h4{font-family:'Archivo',sans-serif;font-weight:800;font-size:19px;margin:10px 0 6px}
+  .mcard p{font-size:14.5px;color:#4a4034}
+  .mcard .gov{font-family:'Space Mono',monospace;font-size:11px;font-weight:700;color:var(--rust2);margin-top:10px;display:block}
+
+  /* DIFF */
+  .diff{display:grid;grid-template-columns:repeat(2,1fr);gap:16px}
+  @media(max-width:680px){.diff{grid-template-columns:1fr}}
+  .dcard{border-left:5px solid var(--gold);background:var(--paper2);padding:18px 20px}
+  .dcard h4{font-family:'Archivo',sans-serif;font-weight:800;font-size:17px;margin-bottom:5px}
+  .dcard p{font-size:14.5px;color:#4a4034}
+
+  /* ROADMAP */
+  .road{position:relative;padding-left:34px}
+  .road::before{content:"";position:absolute;left:9px;top:6px;bottom:6px;width:3px;background:repeating-linear-gradient(var(--line) 0 7px,transparent 7px 14px)}
+  .phase{margin-bottom:34px;position:relative}
+  .phase::before{content:"";position:absolute;left:-31px;top:4px;width:18px;height:18px;border:3px solid var(--line);border-radius:50%;background:var(--gold)}
+  .phase.mid::before{background:var(--sage)}
+  .phase.far::before{background:var(--teal)}
+  .phase .ph{font-family:'Space Mono',monospace;font-size:12px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--rust2)}
+  .phase h4{font-family:'Archivo',sans-serif;font-weight:800;font-size:22px;margin:3px 0 12px}
+  .phase ul{list-style:none}
+  .phase li{padding:7px 0 7px 22px;position:relative;font-size:15.5px;border-top:1px dashed rgba(34,29,23,.2)}
+  .phase li:first-child{border-top:none}
+  .phase li::before{content:"▸";position:absolute;left:2px;color:var(--rust)}
+  .phase li b{font-weight:700}
+
+  /* TECH + CTA */
+  .tech{display:flex;gap:10px;flex-wrap:wrap;margin-top:8px}
+  .tpill{font-family:'Space Mono',monospace;font-size:12px;font-weight:700;border:2px solid var(--line);padding:8px 14px;background:var(--paper2)}
+  .cta{background:var(--ink2);color:var(--paper);text-align:center;padding:60px 0;border-bottom:none}
+  .cta h2{color:var(--paper)}
+  .cta p{font-size:18px;color:#d8cdb8;max-width:560px;margin:10px auto 0}
+  .cta .mono{color:var(--gold);font-size:14px;margin-top:22px;display:block;letter-spacing:.1em}
+  footer{padding:40px 0;text-align:center;background:var(--ink2)}
+  footer p{font-family:'Space Mono',monospace;font-size:11px;color:#7a6f5d;letter-spacing:.12em}
+</style>
+</head>
+<body>
+<div class="grain"></div>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="wrap">
+    <div class="tag">Open Source · Autonomous AI Orchestration</div>
+    <h1>HES<span class="o">O</span></h1>
+    <div class="full">Hermes · Sisyphus · Orchestrator</div>
+    <p class="lede">An autonomous AI system that <b>reviews, fixes, and evolves your codebase around the clock</b> — one mind that thinks and judges, one worker that builds, looping forever while you just read a short message.</p>
+    <div class="pills">
+      <span class="hpill r">Self-healing code loop</span>
+      <span class="hpill">Never sleeps</span>
+      <span class="hpill g">Generates its own ideas</span>
+      <span class="hpill">You only read Telegram</span>
+    </div>
+  </div>
+</div>
+
+<!-- BIG IDEA -->
+<section>
+  <div class="wrap">
+    <div class="eyebrow">The Big Idea</div>
+    <h2>One Mind, One Worker</h2>
+    <p class="intro">A worker that reviews its own work always says "looks fine." HESO splits the two jobs in two: <b>Hermes</b> does all the thinking, judging and quality control; <b>Sisyphus</b> only executes. The separation is the whole trick.</p>
+    <div class="duo">
+      <div class="actor h">
+        <span class="role">The Mind</span>
+        <div class="myth">Hermes — messenger of the gods</div>
+        <h3>Hermes</h3>
+        <ul>
+          <li>Project Manager — sets priorities & the TODO board</li>
+          <li>Product Owner — guards user intention, proposes ideas</li>
+          <li>QA / Reviewer — reads the actual code, verifies every fix</li>
+          <li>Commits & pushes itself (most reliable)</li>
+          <li>Sends you one short report each cycle</li>
+        </ul>
+      </div>
+      <div class="vs">⟶</div>
+      <div class="actor s">
+        <span class="role">The Hands</span>
+        <div class="myth">Sisyphus — endless, tireless labour</div>
+        <h3>Sisyphus</h3>
+        <ul>
+          <li>Worker — executes only what Hermes dispatches</li>
+          <li>Fixes the code, reports back a summary</li>
+          <li>Never reviews itself, never sets priorities</li>
+          <li>Spins up sub-agents to finish faster</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- LOOP -->
+<section>
+  <div class="wrap">
+    <div class="eyebrow">The Loop</div>
+    <h2>Observe → Fix → Repeat, Forever</h2>
+    <p class="intro">Every cron cycle, Hermes wakes, looks at reality, decides what matters, hands Sisyphus a single clear task, then verifies and reports. Like the myth — the work never ends, but here it compounds.</p>
+    <div class="loop">
+      <div class="lstep"><span class="who h">Hermes</span><div class="ln">1</div><h4>Observe</h4><p>Read worker output, the TODO board & the real code.</p></div>
+      <div class="lstep"><span class="who h">Hermes</span><div class="ln">2</div><h4>Verify</h4><p>Did last fix actually land & make sense? Mark done / redo.</p></div>
+      <div class="lstep"><span class="who h">Hermes</span><div class="ln">3</div><h4>Review</h4><p>Hunt new issues, log ideas, UX notes & pain points.</p></div>
+      <div class="lstep"><span class="who h">Hermes</span><div class="ln">4</div><h4>Dispatch</h4><p>Hand Sisyphus the top task as one clear instruction.</p></div>
+      <div class="lstep"><span class="who s">Sisyphus</span><div class="ln">5</div><h4>Fix</h4><p>Execute, summarise the change, hand it back.</p></div>
+      <div class="lstep"><span class="who h">Hermes</span><div class="ln">6</div><h4>Notify</h4><p>Commit, push, and send you one short message.</p></div>
+    </div>
+    <p class="loopnote">"One must imagine Sisyphus happy." — and now, productive.</p>
+  </div>
+</section>
+
+<!-- MEMORY -->
+<section>
+  <div class="wrap">
+    <div class="eyebrow">Three Memory Layers</div>
+    <h2>It Remembers, Analyses, and Dreams</h2>
+    <p class="intro">HESO keeps three kinds of memory in a single lightweight database — so it never loses the plot, and occasionally surprises you.</p>
+    <div class="mem">
+      <div class="mcard a">
+        <div class="ic">🧭</div>
+        <h4>User Intention</h4>
+        <p>Your direction & boundaries. Set once at project start so the system never drifts off-course.</p>
+        <span class="gov">⚑ Only changed after asking you</span>
+      </div>
+      <div class="mcard b">
+        <div class="ic">🔬</div>
+        <h4>Product Analysis</h4>
+        <p>Living record of ideas, UX observations and pain points — the system's evolving understanding of the product.</p>
+        <span class="gov">⚑ Grown by Hermes every cycle</span>
+      </div>
+      <div class="mcard c">
+        <div class="ic">✨</div>
+        <h4>Free-Association Pool</h4>
+        <p>A growing pool of keywords. Each cycle Hermes brainstorms wildly off-topic, then drops three back in as "other thoughts" to spark unexpected ideas.</p>
+        <span class="gov">⚑ Deliberately unconstrained</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- DIFFERENT -->
+<section>
+  <div class="wrap">
+    <div class="eyebrow">Why It's Different</div>
+    <h2>Not Another Linter</h2>
+    <div class="diff">
+      <div class="dcard"><h4>Self-healing</h4><p>It doesn't just report problems — it fixes them, commits, and moves on. No human in the inner loop.</p></div>
+      <div class="dcard"><h4>Never sleeps</h4><p>800–1000 cycles a day. Progress compounds while you do anything else.</p></div>
+      <div class="dcard"><h4>Generates its own ideas</h4><p>Built-in brainstorming means it proposes features, safety and performance work — not just bug fixes.</p></div>
+      <div class="dcard"><h4>Featherweight</h4><p>No vector DB, no embeddings, no GPU tax. Plain SQLite + tmux + cron. Runs anywhere.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- ROADMAP -->
+<section>
+  <div class="wrap">
+    <div class="eyebrow">Where It's Going</div>
+    <h2>Roadmap</h2>
+    <p class="intro">HESO is open source and built in the open. Here's the direction.</p>
+    <div class="road">
+      <div class="phase">
+        <div class="ph">Near-term · v1.x</div>
+        <h4>Solid & visible</h4>
+        <ul>
+          <li><b>Risk / approval gates</b> — high-risk changes (schema, auth) need a one-tap Telegram approval before dispatch.</li>
+          <li><b>Web dashboard</b> — one screen for all jobs, the TODO board and commit history.</li>
+          <li><b>Cost & GPU telemetry</b> — track resource use per cycle to keep loops cheap.</li>
+        </ul>
+      </div>
+      <div class="phase mid">
+        <div class="ph">Mid-term · v2</div>
+        <h4>Scale & adapt</h4>
+        <ul>
+          <li><b>Multi-worker</b> — one Hermes directing many Sisyphus workers across projects and modules.</li>
+          <li><b>Pluggable workers</b> — swap in Claude Code, Aider or any agent behind the same interface.</li>
+          <li><b>Self-evolving prompts</b> — Hermes tunes how it dispatches based on what gets the best results.</li>
+        </ul>
+      </div>
+      <div class="phase far">
+        <div class="ph">Long-term</div>
+        <h4>Cross-pollinate</h4>
+        <ul>
+          <li><b>Cross-project idea transfer</b> — a concept sparked in one project can inspire another.</li>
+          <li><b>Optional vector recall</b> — opt-in semantic memory for those with GPU headroom (off by default).</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- TECH -->
+<section>
+  <div class="wrap">
+    <div class="eyebrow">Under the Hood</div>
+    <h2>Boring on Purpose</h2>
+    <p class="intro">Deliberately lightweight so it runs on a single machine, all day, without melting your GPU.</p>
+    <div class="tech">
+      <span class="tpill">SQLite (no vector)</span>
+      <span class="tpill">tmux sessions</span>
+      <span class="tpill">cron scheduler</span>
+      <span class="tpill">Python routine</span>
+      <span class="tpill">Telegram reports</span>
+      <span class="tpill">Plain-text prompts</span>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<section class="cta">
+  <div class="wrap">
+    <h2>Build It In The Open</h2>
+    <p>HESO turns one machine into a tireless engineering team that reviews, fixes and dreams while you sleep.</p>
+    <span class="mono">★ github.com/&lt;your-handle&gt;/heso · MIT License</span>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap"><p>HESO — HERMES SISYPHUS ORCHESTRATOR · ONE MIND, ONE WORKER, ENDLESS PROGRESS</p></div>
+</footer>
+</body>
+</html>
