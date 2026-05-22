@@ -1,0 +1,829 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Project Startup & UI Report Skill Workflow</title>
+  <meta
+    name="description"
+    content="A GitHub-friendly bilingual workflow document for project startup, environment verification, frontend/backend launch, UI screenshot testing, and reporting."
+  />
+  <style>
+    :root {
+      --bg: #0b1020;
+      --panel: #121a2b;
+      --panel-2: #182338;
+      --card: #1b2940;
+      --border: rgba(255,255,255,0.12);
+      --text: #e8eefc;
+      --muted: #a9b6d3;
+      --blue: #5aa9ff;
+      --green: #42d392;
+      --yellow: #f5c451;
+      --red: #ff758f;
+      --purple: #a78bfa;
+      --cyan: #67e8f9;
+      --shadow: 0 16px 50px rgba(0,0,0,0.28);
+      --radius: 20px;
+      --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    }
+
+    * { box-sizing: border-box; }
+
+    html, body {
+      margin: 0;
+      padding: 0;
+      background:
+        radial-gradient(circle at top left, rgba(90,169,255,.18) 0, transparent 25%),
+        radial-gradient(circle at top right, rgba(167,139,250,.18) 0, transparent 22%),
+        var(--bg);
+      color: var(--text);
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Noto Sans TC", sans-serif;
+      line-height: 1.65;
+    }
+
+    a { color: #9bd1ff; }
+
+    .page {
+      max-width: 1320px;
+      margin: 0 auto;
+      padding: 28px 20px 72px;
+    }
+
+    .hero {
+      background: linear-gradient(180deg, rgba(255,255,255,.04), rgba(255,255,255,.02));
+      border: 1px solid var(--border);
+      border-radius: 28px;
+      box-shadow: var(--shadow);
+      padding: 32px 28px;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .hero::after {
+      content: "";
+      position: absolute;
+      inset: auto -80px -80px auto;
+      width: 220px;
+      height: 220px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(103,232,249,.18), transparent 70%);
+      pointer-events: none;
+    }
+
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      padding: 7px 12px;
+      border-radius: 999px;
+      background: rgba(255,255,255,.06);
+      border: 1px solid var(--border);
+      color: var(--cyan);
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: .02em;
+      margin-bottom: 16px;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: clamp(30px, 4vw, 52px);
+      line-height: 1.08;
+      letter-spacing: -0.03em;
+    }
+
+    .hero .subtitle {
+      margin-top: 14px;
+      font-size: 18px;
+      color: var(--muted);
+      max-width: 980px;
+    }
+
+    .hero-grid {
+      margin-top: 22px;
+      display: grid;
+      grid-template-columns: 1.2fr .8fr;
+      gap: 18px;
+    }
+
+    .intro-box, .meta-box {
+      background: rgba(255,255,255,.035);
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      padding: 18px 18px;
+    }
+
+    .intro-box h2, .meta-box h2 {
+      margin: 0 0 10px;
+      font-size: 18px;
+    }
+
+    .intro-box p, .meta-box p, .meta-box li {
+      margin: 0;
+      color: var(--muted);
+      font-size: 15px;
+    }
+
+    .meta-box ul {
+      margin: 0;
+      padding-left: 20px;
+    }
+
+    .legend {
+      margin-top: 18px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 12px;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      background: rgba(255,255,255,.04);
+      color: var(--muted);
+      font-size: 13px;
+      font-weight: 600;
+    }
+
+    .dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      display: inline-block;
+    }
+
+    .section {
+      margin-top: 28px;
+      background: linear-gradient(180deg, rgba(255,255,255,.03), rgba(255,255,255,.02));
+      border: 1px solid var(--border);
+      border-radius: 24px;
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+
+    .section-header {
+      padding: 20px 22px;
+      border-bottom: 1px solid var(--border);
+      background: rgba(255,255,255,.03);
+    }
+
+    .section-header h2 {
+      margin: 0;
+      font-size: 22px;
+      letter-spacing: -0.02em;
+    }
+
+    .section-header p {
+      margin: 6px 0 0;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .section-body {
+      padding: 18px;
+    }
+
+    .svg-wrap {
+      background: linear-gradient(180deg, #0c1527, #0b1220);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 14px;
+      overflow: auto;
+    }
+
+    svg {
+      width: 100%;
+      min-width: 1180px;
+      height: auto;
+      display: block;
+    }
+
+    .flow-title {
+      font: 700 16px system-ui, sans-serif;
+      fill: #eaf1ff;
+    }
+
+    .flow-sub {
+      font: 500 12px system-ui, sans-serif;
+      fill: #a9b6d3;
+    }
+
+    .flow-index {
+      font: 700 14px system-ui, sans-serif;
+      fill: #08111f;
+    }
+
+    .flow-small {
+      font: 500 11px system-ui, sans-serif;
+      fill: #bfd0f2;
+    }
+
+    .details-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 16px;
+    }
+
+    .detail-card {
+      background: linear-gradient(180deg, var(--card), var(--panel-2));
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      padding: 18px;
+    }
+
+    .detail-card h3 {
+      margin: 0 0 10px;
+      font-size: 18px;
+    }
+
+    .detail-card p {
+      margin: 0 0 10px;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .stage-list {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0,1fr));
+      gap: 16px;
+      margin-top: 18px;
+    }
+
+    .stage-item {
+      background: rgba(255,255,255,.035);
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      padding: 18px;
+    }
+
+    .stage-item .num {
+      display: inline-grid;
+      place-items: center;
+      width: 34px;
+      height: 34px;
+      border-radius: 12px;
+      font-weight: 800;
+      color: #07111e;
+      margin-bottom: 10px;
+    }
+
+    .stage-item h3 {
+      margin: 0 0 8px;
+      font-size: 17px;
+    }
+
+    .stage-item p {
+      margin: 0 0 10px;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .stage-item ul {
+      margin: 0;
+      padding-left: 18px;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .code {
+      margin-top: 10px;
+      padding: 12px 14px;
+      border-radius: 12px;
+      background: #09111f;
+      border: 1px solid rgba(255,255,255,.08);
+      font-family: var(--mono);
+      font-size: 12px;
+      color: #cfe1ff;
+      overflow-x: auto;
+      white-space: pre-wrap;
+    }
+
+    .footer-note {
+      margin-top: 26px;
+      border: 1px solid var(--border);
+      background: rgba(255,255,255,.035);
+      border-radius: 20px;
+      padding: 20px;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .blue { background: var(--blue); }
+    .green { background: var(--green); }
+    .yellow { background: var(--yellow); }
+    .red { background: var(--red); }
+    .purple { background: var(--purple); }
+    .cyan { background: var(--cyan); }
+
+    @media (max-width: 980px) {
+      .hero-grid,
+      .details-grid,
+      .stage-list {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media print {
+      body {
+        background: #fff;
+        color: #111827;
+      }
+      .hero, .section, .footer-note, .detail-card, .stage-item, .intro-box, .meta-box {
+        background: #fff !important;
+        box-shadow: none;
+        color: #111827;
+      }
+      .hero .subtitle, .intro-box p, .meta-box p, .meta-box li, .section-header p, .detail-card p, .stage-item p, .stage-item ul, .footer-note {
+        color: #374151 !important;
+      }
+      .svg-wrap {
+        background: #fff;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="page">
+    <section class="hero">
+      <div class="eyebrow">Project Skill Documentation · GitHub Ready</div>
+      <h1>Project Startup & UI Report Skill Workflow</h1>
+      <p class="subtitle">
+        專案啟動與 UI 測試回報技能流程圖
+        <br />
+        A bilingual workflow document for environment detection, project opening, backend/frontend startup, UI screenshot capture, reporting, and safe automation fallback.
+      </p>
+
+      <div class="hero-grid">
+        <div class="intro-box">
+          <h2>文件用途 / Purpose of This Document</h2>
+          <p>
+            呢份文件用嚟定義一個可重用嘅自動化技能（Skill / Workflow），俾 agent 或自動化工具喺多環境
+            （例如 WSL + Windows、macOS、Linux）之下，安全咁完成以下工作：確認 project 位置、檢查
+            OpenDesk / OpenHand 可用性、掃描專案結構、啟動 backend / frontend、截取 UI 畫面、寫入 log、
+            以及經現有 channel（Telegram / WhatsApp / Email）回報結果。
+          </p>
+          <br />
+          <p>
+            This document is intended to serve as a GitHub-friendly specification for a reusable automation skill.
+            It defines a safe and structured process for opening a project, validating the execution environment,
+            launching services, capturing UI screenshots, generating structured logs, and sending reports back to the user.
+          </p>
+        </div>
+
+        <div class="meta-box">
+          <h2>設計目標 / Design Goals</h2>
+          <ul>
+            <li>先確認，後執行 / Verify first, then execute</li>
+            <li>所有輸出有紀錄 / Everything should be logged</li>
+            <li>有 fallback 機制 / Safe fallback when remote control fails</li>
+            <li>保護 repo 整潔 / Keep screenshots, logs, env, and temp files out of Git</li>
+            <li>清楚通知用家 / Keep the user informed at key steps</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="legend">
+        <span class="pill"><span class="dot blue"></span>環境檢查 / Environment</span>
+        <span class="pill"><span class="dot green"></span>執行與啟動 / Execution</span>
+        <span class="pill"><span class="dot yellow"></span>判斷與回退 / Decision & Fallback</span>
+        <span class="pill"><span class="dot purple"></span>UI 測試與回報 / UI Test & Report</span>
+        <span class="pill"><span class="dot red"></span>安全與版本控制 / Safety & Git Hygiene</span>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="section-header">
+        <h2>Visual Flowchart / 視覺化流程圖</h2>
+        <p>Below is the main process flow drawn as an SVG diagram with nodes and connectors.</p>
+      </div>
+      <div class="section-body">
+        <div class="svg-wrap">
+          <svg viewBox="0 0 1280 1080" xmlns="http://www.w3.org/2000/svg" aria-labelledby="svgTitle svgDesc" role="img">
+            <title id="svgTitle">Project Startup and UI Report Workflow</title>
+            <desc id="svgDesc">A bilingual visual flowchart showing steps from project location confirmation to final report.</desc>
+
+            <defs>
+              <linearGradient id="nodeBlue" x1="0" x2="1">
+                <stop offset="0%" stop-color="#5aa9ff"/>
+                <stop offset="100%" stop-color="#7cc0ff"/>
+              </linearGradient>
+              <linearGradient id="nodeGreen" x1="0" x2="1">
+                <stop offset="0%" stop-color="#42d392"/>
+                <stop offset="100%" stop-color="#6fe7b5"/>
+              </linearGradient>
+              <linearGradient id="nodeYellow" x1="0" x2="1">
+                <stop offset="0%" stop-color="#f5c451"/>
+                <stop offset="100%" stop-color="#ffd978"/>
+              </linearGradient>
+              <linearGradient id="nodePurple" x1="0" x2="1">
+                <stop offset="0%" stop-color="#a78bfa"/>
+                <stop offset="100%" stop-color="#c0a9ff"/>
+              </linearGradient>
+              <linearGradient id="nodeRed" x1="0" x2="1">
+                <stop offset="0%" stop-color="#ff758f"/>
+                <stop offset="100%" stop-color="#ff9fb0"/>
+              </linearGradient>
+              <filter id="shadow" x="-30%" y="-30%" width="160%" height="160%">
+                <feDropShadow dx="0" dy="8" stdDeviation="10" flood-color="rgba(0,0,0,.35)"/>
+              </filter>
+              <marker id="arrowBlue" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+                <path d="M0,0 L12,6 L0,12 z" fill="#7aa7d8"/>
+              </marker>
+            </defs>
+
+            <rect x="0" y="0" width="1280" height="1080" rx="24" fill="#091120"/>
+
+            <!-- connectors -->
+            <g stroke="#6c86aa" stroke-width="3" fill="none" marker-end="url(#arrowBlue)" opacity="0.95">
+              <path d="M250 155 L390 155" />
+              <path d="M570 155 L710 155" />
+              <path d="M890 155 L1030 155" />
+
+              <path d="M1130 210 L1130 285 L1030 285" />
+              <path d="M890 285 L770 285" />
+              <path d="M610 285 L490 285" />
+              <path d="M330 340 L330 415 L390 415" />
+
+              <path d="M570 415 L710 415" />
+              <path d="M890 415 L1030 415" />
+
+              <path d="M1130 470 L1130 545 L1030 545" />
+              <path d="M890 545 L770 545" />
+              <path d="M610 545 L490 545" />
+              <path d="M330 600 L330 675 L390 675" />
+
+              <path d="M570 675 L710 675" />
+              <path d="M890 675 L1030 675" />
+
+              <path d="M1130 730 L1130 805 L1030 805" />
+              <path d="M890 805 L770 805" />
+              <path d="M610 805 L490 805" />
+              <path d="M330 860 L330 935 L640 935" />
+            </g>
+
+            <!-- row 1 -->
+            <g filter="url(#shadow)">
+              <rect x="70" y="100" rx="20" ry="20" width="180" height="110" fill="url(#nodeBlue)"/>
+              <circle cx="102" cy="132" r="18" fill="#eaf4ff"/><text x="95" y="137" class="flow-index">0</text>
+              <text x="125" y="132" class="flow-title">確認專案位置</text>
+              <text x="125" y="151" class="flow-sub">Confirm Project Path</text>
+              <text x="90" y="178" class="flow-small">PROJECT_ROOT / folder exists</text>
+
+              <rect x="390" y="100" rx="20" ry="20" width="180" height="110" fill="url(#nodeBlue)"/>
+              <circle cx="422" cy="132" r="18" fill="#eaf4ff"/><text x="415" y="137" class="flow-index">1</text>
+              <text x="445" y="132" class="flow-title">偵測環境</text>
+              <text x="445" y="151" class="flow-sub">Detect Environment</text>
+              <text x="410" y="178" class="flow-small">WSL / Windows / macOS / Linux</text>
+
+              <rect x="710" y="100" rx="20" ry="20" width="180" height="110" fill="url(#nodeBlue)"/>
+              <circle cx="742" cy="132" r="18" fill="#eaf4ff"/><text x="735" y="137" class="flow-index">2</text>
+              <text x="765" y="132" class="flow-title">檢查控制能力</text>
+              <text x="765" y="151" class="flow-sub">Check Control Tools</text>
+              <text x="730" y="178" class="flow-small">OpenDesk / OpenHand / pair / session</text>
+
+              <rect x="1030" y="100" rx="20" ry="20" width="180" height="110" fill="url(#nodeYellow)"/>
+              <circle cx="1062" cy="132" r="18" fill="#fff7db"/><text x="1055" y="137" class="flow-index">3</text>
+              <text x="1085" y="132" class="flow-title">Fallback 決策</text>
+              <text x="1085" y="151" class="flow-sub">Fallback Decision</text>
+              <text x="1048" y="178" class="flow-small">If remote control fails, ask user / use terminal</text>
+            </g>
+
+            <!-- row 2 -->
+            <g filter="url(#shadow)">
+              <rect x="710" y="230" rx="20" ry="20" width="180" height="110" fill="url(#nodeGreen)"/>
+              <circle cx="742" cy="262" r="18" fill="#ecfff7"/><text x="735" y="267" class="flow-index">4</text>
+              <text x="765" y="262" class="flow-title">建立必要資料夾</text>
+              <text x="765" y="281" class="flow-sub">Create Required Folders</text>
+              <text x="738" y="308" class="flow-small">logs / printscreen-test / env</text>
+
+              <rect x="390" y="230" rx="20" ry="20" width="180" height="110" fill="url(#nodeRed)"/>
+              <circle cx="422" cy="262" r="18" fill="#fff0f4"/><text x="415" y="267" class="flow-index">5</text>
+              <text x="445" y="262" class="flow-title">更新 .gitignore</text>
+              <text x="445" y="281" class="flow-sub">Update .gitignore</text>
+              <text x="408" y="308" class="flow-small">Ignore logs, screenshots, env, temp files</text>
+
+              <rect x="70" y="360" rx="20" ry="20" width="180" height="110" fill="url(#nodeGreen)"/>
+              <circle cx="102" cy="392" r="18" fill="#ecfff7"/><text x="95" y="397" class="flow-index">6</text>
+              <text x="125" y="392" class="flow-title">打開專案資料夾</text>
+              <text x="125" y="411" class="flow-sub">Open Project Folder</text>
+              <text x="88" y="438" class="flow-small">Notify user before opening</text>
+            </g>
+
+            <!-- row 3 -->
+            <g filter="url(#shadow)">
+              <rect x="390" y="360" rx="20" ry="20" width="180" height="110" fill="url(#nodeGreen)"/>
+              <circle cx="422" cy="392" r="18" fill="#ecfff7"/><text x="415" y="397" class="flow-index">7</text>
+              <text x="445" y="392" class="flow-title">掃描結構</text>
+              <text x="445" y="411" class="flow-sub">Scan Structure</text>
+              <text x="410" y="438" class="flow-small">Detect backend / frontend / stack</text>
+
+              <rect x="710" y="360" rx="20" ry="20" width="180" height="110" fill="url(#nodeYellow)"/>
+              <circle cx="742" cy="392" r="18" fill="#fff7db"/><text x="735" y="397" class="flow-index">8</text>
+              <text x="765" y="392" class="flow-title">判斷啟動方式</text>
+              <text x="765" y="411" class="flow-sub">Decide Launch Method</text>
+              <text x="728" y="438" class="flow-small">Commands / ports / ask if unclear</text>
+
+              <rect x="1030" y="360" rx="20" ry="20" width="180" height="110" fill="url(#nodeGreen)"/>
+              <circle cx="1062" cy="392" r="18" fill="#ecfff7"/><text x="1055" y="397" class="flow-index">9</text>
+              <text x="1085" y="392" class="flow-title">開 Backend / Frontend</text>
+              <text x="1085" y="411" class="flow-sub">Launch Services</text>
+              <text x="1048" y="438" class="flow-small">Two terminals + timestamped logs</text>
+            </g>
+
+            <!-- row 4 -->
+            <g filter="url(#shadow)">
+              <rect x="710" y="490" rx="20" ry="20" width="180" height="110" fill="url(#nodePurple)"/>
+              <circle cx="742" cy="522" r="18" fill="#f5f1ff"/><text x="732" y="527" class="flow-index">10</text>
+              <text x="765" y="522" class="flow-title">打開 Frontend UI</text>
+              <text x="765" y="541" class="flow-sub">Open Frontend UI</text>
+              <text x="730" y="568" class="flow-small">Detect localhost URL and open browser</text>
+
+              <rect x="390" y="490" rx="20" ry="20" width="180" height="110" fill="url(#nodePurple)"/>
+              <circle cx="422" cy="522" r="18" fill="#f5f1ff"/><text x="412" y="527" class="flow-index">11</text>
+              <text x="445" y="522" class="flow-title">截圖 UI</text>
+              <text x="445" y="541" class="flow-sub">Capture Screenshot</text>
+              <text x="408" y="568" class="flow-small">Save under printscreen-test/</text>
+
+              <rect x="70" y="620" rx="20" ry="20" width="180" height="110" fill="url(#nodePurple)"/>
+              <circle cx="102" cy="652" r="18" fill="#f5f1ff"/><text x="92" y="657" class="flow-index">12</text>
+              <text x="125" y="652" class="flow-title">分析 UI</text>
+              <text x="125" y="671" class="flow-sub">Analyze UI Components</text>
+              <text x="88" y="698" class="flow-small">Assign component IDs and interactions</text>
+            </g>
+
+            <!-- row 5 -->
+            <g filter="url(#shadow)">
+              <rect x="390" y="620" rx="20" ry="20" width="180" height="110" fill="url(#nodePurple)"/>
+              <circle cx="422" cy="652" r="18" fill="#f5f1ff"/><text x="412" y="657" class="flow-index">13</text>
+              <text x="445" y="652" class="flow-title">寫測試 Log</text>
+              <text x="445" y="671" class="flow-sub">Write Test Log</text>
+              <text x="405" y="698" class="flow-small">test-screen-YYYYMMDD-HHMMSS.log</text>
+
+              <rect x="710" y="620" rx="20" ry="20" width="180" height="110" fill="url(#nodePurple)"/>
+              <circle cx="742" cy="652" r="18" fill="#f5f1ff"/><text x="732" y="657" class="flow-index">14</text>
+              <text x="765" y="652" class="flow-title">經 Channel 發送</text>
+              <text x="765" y="671" class="flow-sub">Send via Existing Channel</text>
+              <text x="732" y="698" class="flow-small">Telegram / WhatsApp / Email</text>
+
+              <rect x="1030" y="620" rx="20" ry="20" width="180" height="110" fill="url(#nodeRed)"/>
+              <circle cx="1062" cy="652" r="18" fill="#fff0f4"/><text x="1052" y="657" class="flow-index">15</text>
+              <text x="1085" y="652" class="flow-title">錯誤處理</text>
+              <text x="1085" y="671" class="flow-sub">Handle Errors Safely</text>
+              <text x="1047" y="698" class="flow-small">Port conflict / pair mismatch / missing path</text>
+            </g>
+
+            <!-- row 6 -->
+            <g filter="url(#shadow)">
+              <rect x="710" y="750" rx="20" ry="20" width="180" height="110" fill="url(#nodeGreen)"/>
+              <circle cx="742" cy="782" r="18" fill="#ecfff7"/><text x="732" y="787" class="flow-index">16</text>
+              <text x="765" y="782" class="flow-title">最後回報</text>
+              <text x="765" y="801" class="flow-sub">Final User Report</text>
+              <text x="733" y="828" class="flow-small">Folder, status, URL, screenshot, logs</text>
+
+              <rect x="390" y="750" rx="20" ry="20" width="180" height="110" fill="url(#nodeYellow)"/>
+              <circle cx="422" cy="782" r="18" fill="#fff7db"/><text x="412" y="787" class="flow-index">17</text>
+              <text x="445" y="782" class="flow-title">建議下一步</text>
+              <text x="445" y="801" class="flow-sub">Recommend Next Action</text>
+              <text x="410" y="828" class="flow-small">Fix pair key / review bug / confirm commands</text>
+
+              <rect x="70" y="880" rx="20" ry="20" width="520" height="110" fill="url(#nodeRed)"/>
+              <circle cx="102" cy="912" r="18" fill="#fff0f4"/><text x="92" y="917" class="flow-index">18</text>
+              <text x="125" y="912" class="flow-title">核心原則 / Core Principle</text>
+              <text x="125" y="931" class="flow-sub">Verify → Inform → Execute → Log → Report → Protect</text>
+              <text x="88" y="958" class="flow-small">先確認環境，再通知用家，再安全執行；所有輸出可追蹤，所有測試檔案不應污染 Git repository。</text>
+            </g>
+          </svg>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="section-header">
+        <h2>Workflow Summary / 流程摘要</h2>
+        <p>Short explanation of the process in repository-friendly bilingual format.</p>
+      </div>
+      <div class="section-body">
+        <div class="details-grid">
+          <div class="detail-card">
+            <h3>中文說明</h3>
+            <p>
+              呢個 Skill 主要用嚟處理「打開 project 並驗證 UI」呢類高頻任務。流程首先會確認專案路徑、
+              環境類型（WSL / Windows / macOS / Linux），再檢查 OpenDesk / OpenHand 是否可用。
+              如果 remote control 失敗，流程會 fallback 去 terminal 模式，並喺必要時要求用戶確認。
+            </p>
+            <p>
+              完成環境檢查後，系統會建立 logs/、printscreen-test/、env/，同時確保 .gitignore 已排除
+              logs、截圖、env、.db、.png、.jpg、.jpeg、.log、.env 等檔案。之後會掃描專案結構，判斷
+              backend / frontend 啟動方式，開兩個 terminal，將所有輸出寫入 logs。
+            </p>
+            <p>
+              當 frontend 成功啟動後，流程會打開 UI、截圖、分析畫面組件、建立帶有 component ID 的測試報告，
+              並經由既有 channel 發送俾用家。最後，agent 會提供整體狀態與下一步建議。
+            </p>
+          </div>
+
+          <div class="detail-card">
+            <h3>English Summary</h3>
+            <p>
+              This skill is designed for repeatable “open project and validate UI” tasks. It begins by confirming the
+              project location and execution environment (WSL / Windows / macOS / Linux), then checks whether
+              OpenDesk / OpenHand is available for remote interaction.
+            </p>
+            <p>
+              If remote control is not available, the workflow safely falls back to terminal-based execution and asks
+              the user for confirmation when needed. It then prepares the working directories, updates .gitignore,
+              scans the project structure, determines how backend and frontend should be launched, and records
+              all output to timestamped log files.
+            </p>
+            <p>
+              Once the frontend UI is running, the workflow opens the page, captures a screenshot, analyzes the UI,
+              writes a structured test log with component IDs and potential interactions/bugs, and sends the result
+              to the user through an existing communication channel.
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="section-header">
+        <h2>Detailed Stages / 詳細步驟</h2>
+        <p>Expanded explanation of each stage for future implementation or skill authoring.</p>
+      </div>
+      <div class="section-body">
+        <div class="stage-list">
+          <article class="stage-item">
+            <div class="num blue">0</div>
+            <h3>確認專案位置 / Confirm Project Path</h3>
+            <p>接收 project 名稱或完整路徑，檢查 folder 是否存在，避免誤開錯誤專案。</p>
+            <ul>
+              <li>Accept project name or full path</li>
+              <li>Resolve path in WSL / Windows / Unix-like systems</li>
+              <li>Stop early if the folder cannot be found</li>
+            </ul>
+          </article>
+
+          <article class="stage-item">
+            <div class="num blue">1</div>
+            <h3>偵測執行環境 / Detect Environment</h3>
+            <p>判斷目前是否在 WSL，並識別外層作業系統，建立 path mapping。</p>
+            <div class="code">grep -qEi "(Microsoft|WSL)" /proc/version
+uname -s</div>
+          </article>
+
+          <article class="stage-item">
+            <div class="num blue">2</div>
+            <h3>檢查控制工具 / Check Control Tools</h3>
+            <p>確認 OpenDesk / OpenHand 是否安裝及可用，檢查 pair / session 狀態。</p>
+            <ul>
+              <li>Check local binary availability</li>
+              <li>Validate pair/session state</li>
+              <li>Handle static key mismatch safely</li>
+            </ul>
+          </article>
+
+          <article class="stage-item">
+            <div class="num yellow">3</div>
+            <h3>Fallback 決策 / Fallback Decision</h3>
+            <p>如果 remote control 唔通，就用 terminal / PowerShell 模式；有需要時先問用戶確認。</p>
+            <ul>
+              <li>Prefer OpenDesk / OpenHand first</li>
+              <li>Fallback to terminal-based launch</li>
+              <li>Ask user when direct control is required</li>
+            </ul>
+          </article>
+
+          <article class="stage-item">
+            <div class="num green">4</div>
+            <h3>建立資料夾 / Create Required Folders</h3>
+            <p>確保 logs/、printscreen-test/、env/ 存在，方便輸出與測試資源集中管理。</p>
+            <div class="code">mkdir -p logs printscreen-test env</div>
+          </article>
+
+          <article class="stage-item">
+            <div class="num red">5</div>
+            <h3>更新 .gitignore / Update .gitignore</h3>
+            <p>將暫存及測試輸出排除，保持 repo 整潔。</p>
+            <div class="code">/logs/
+/printscreen-test/
+/env/
+*.db
+*.jpg
+*.jpeg
+*.png
+*.log
+*.logs
+.env</div>
+          </article>
+
+          <article class="stage-item">
+            <div class="num green">6</div>
+            <h3>打開專案資料夾 / Open Project Folder</h3>
+            <p>喺打開之前先通知用家，避免背景操作令人混亂。</p>
+            <ul>
+              <li>Windows: explorer.exe</li>
+              <li>macOS: open</li>
+              <li>Linux: xdg-open</li>
+            </ul>
+          </article>
+
+          <article class="stage-item">
+            <div class="num green">7</div>
+            <h3>掃描專案結構 / Scan Project Structure</h3>
+            <p>檢查 frontend/backend 目錄、package.json、requirements.txt、main.py 等重要入口。</p>
+            <ul>
+              <li>Detect framework and stack</li>
+              <li>Identify launch entry points</li>
+              <li>Write scan result to logs</li>
+            </ul>
+          </article>
+
+          <article class="stage-item">
+            <div class="num yellow">8</div>
+            <h3>判斷啟動方式 / Decide Launch Method</h3>
+            <p>如果入口清晰就自動啟動；如果唔清晰就列出候選 command 俾用家確認。</p>
+            <ul>
+              <li>Backend: Python / Node / Docker / etc.</li>
+              <li>Frontend: npm / pnpm / yarn / Vite / Next / React</li>
+            </ul>
+          </article>
+
+          <article class="stage-item">
+            <div class="num green">9</div>
+            <h3>開 Backend / Frontend / Launch Services</h3>
+            <p>為 backend 同 frontend 各開一個 terminal，並寫入獨立 log 檔案。</p>
+            <div class="code">backend  > logs/backend-YYYYMMDD-HHMMSS.log 2>&1
+frontend > logs/frontend-YYYYMMDD-HHMMSS.log 2>&1</div>
+          </article>
+
+          <article class="stage-item">
+            <div class="num purple">10</div>
+            <h3>打開 Frontend UI / Open Frontend UI</h3>
+            <p>從 log 或預設 port 偵測 URL，然後打開瀏覽器。</p>
+            <ul>
+              <li>localhost:3000</li>
+              <li>localhost:5173</li>
+              <li>localhost:8080</li>
+            </ul>
+          </article>
+
+          <article class="stage-item">
+            <div class="num purple">11</div>
+            <h3>截圖 / Capture Screenshot</h3>
+            <p>將 UI 畫面存入 printscreen-test/，只保留測試用途，不提交到 Git。</p>
+            <div class="code">printscreen-test/screen-YYYYMMDD-HHMMSS.png</div>
+          </article>
+
+          <article class="stage-item">
+            <div class="num purple">12–14</div>
+            <h3>分析與回報 / Analyze and Report</h3>
+            <p>建立 UI component list、component ID、interaction、潛在 bug，然後經 channel 傳俾用家。</p>
+            <div class="code">logs/test-screen-YYYYMMDD-HHMMSS.log</div>
+          </article>
+
+          <article class="stage-item">
+            <div class="num red">15</div>
+            <h3>錯誤處理 / Error Handling</h3>
+            <p>包括 port conflict、static key mismatch、missing path、launch failure 等。</p>
+            <ul>
+              <li>Do not kill processes blindly</li>
+              <li>Explain the issue clearly</li>
+              <li>Offer the single most useful next step</li>
+            </ul>
+          </article>
+
+          <article class="stage-item">
+            <div class="num green">16–17</div>
+            <h3>最後回報與下一步 / Final Report and Next Action</h3>
+            <p>向用家回報 project folder、啟動狀態、frontend URL、screenshot 位置、log 檔案、以及建議下一步。</p>
+          </article>
+
+          <article class="stage-item">
+            <div class="num red">18</div>
+            <h3>核心原則 / Core Principle</h3>
+            <p>Verify → Inform → Execute → Log → Report → Protect</p>
+            <ul>
+              <li>先驗證環境，再做操作</li>
+              <li>先通知用家，再打開或控制</li>
+              <li>所有輸出都必須可追蹤</li>
+              <li>測試資源不污染 Git repository</li>
+            </ul>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section class="footer-note">
+      <strong>Recommended GitHub README usage / 建議用途：</strong>
+      You can place this HTML file in your repository under
+      <code>docs/</code> or <code>design/</code> and link it from your README as the visual workflow specification
+      for your automation skill. 呢份文件亦適合作為 agent prompt design、workflow review、同團隊溝通用途。
+    </section>
+  </main>
+</body>
+</html>

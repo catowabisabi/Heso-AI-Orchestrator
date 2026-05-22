@@ -1,0 +1,522 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Hermes Project Init Flow · 專案初始化與測試監控流程</title>
+<meta name="description" content="A reusable agent workflow for project initialization, structure scanning, backend/frontend launch, and UI test reporting in a WSL/Windows hybrid environment.">
+<style>
+  :root {
+    --bg: #0d1117;
+    --bg-elev: #161b22;
+    --bg-elev2: #1c2230;
+    --border: #2a3140;
+    --border-soft: #21262d;
+    --text: #e6edf3;
+    --text-dim: #8b949e;
+    --text-faint: #6e7681;
+    --accent: #2dd4a7;
+    --accent-dim: #1a8268;
+    --blue: #58a6ff;
+    --amber: #e3a008;
+    --coral: #f0883e;
+    --red: #f85149;
+    --purple: #bc8cff;
+    --green: #7ee787;
+    --mono: 'SFMono-Regular', 'JetBrains Mono', 'Cascadia Code', Consolas, 'Roboto Mono', monospace;
+    --sans: 'Helvetica Neue', -apple-system, 'PingFang TC', 'Microsoft JhengHei', sans-serif;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background:
+      radial-gradient(ellipse 80% 50% at 50% -10%, rgba(45,212,167,0.08), transparent),
+      var(--bg);
+    color: var(--text);
+    font-family: var(--sans);
+    line-height: 1.7;
+    -webkit-font-smoothing: antialiased;
+    padding: 0 0 80px;
+  }
+  .wrap { max-width: 940px; margin: 0 auto; padding: 0 24px; }
+  .en { color: var(--text-faint); font-style: normal; }
+
+  header {
+    border-bottom: 1px solid var(--border-soft);
+    background: linear-gradient(180deg, rgba(22,27,34,0.6), transparent);
+    padding: 56px 0 40px;
+    margin-bottom: 40px;
+  }
+  .eyebrow {
+    font-family: var(--mono); font-size: 12px; letter-spacing: 0.18em;
+    text-transform: uppercase; color: var(--accent);
+    display: flex; align-items: center; gap: 10px; margin-bottom: 18px;
+  }
+  .eyebrow::before {
+    content: ""; width: 8px; height: 8px; background: var(--accent);
+    border-radius: 50%; box-shadow: 0 0 12px var(--accent);
+    animation: pulse 2.4s ease-in-out infinite;
+  }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.35} }
+  h1 {
+    font-size: 38px; font-weight: 700; letter-spacing: -0.02em;
+    line-height: 1.18; margin-bottom: 6px;
+  }
+  h1 .accent { color: var(--accent); }
+  .h1-en {
+    font-family: var(--mono); font-size: 15px; color: var(--text-faint);
+    letter-spacing: 0.02em; margin-bottom: 18px;
+  }
+  .lede { color: var(--text-dim); font-size: 16px; max-width: 660px; }
+  .lede .en { display: block; font-size: 14px; margin-top: 6px; }
+  .meta-row { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 24px; }
+  .chip {
+    font-family: var(--mono); font-size: 12px; padding: 5px 12px;
+    border: 1px solid var(--border); border-radius: 6px;
+    color: var(--text-dim); background: var(--bg-elev);
+  }
+  .chip b { color: var(--accent); font-weight: 500; }
+
+  .about {
+    border: 1px solid var(--border); border-left: 3px solid var(--accent);
+    border-radius: 10px; background: var(--bg-elev);
+    padding: 22px 24px; margin-bottom: 8px;
+  }
+  .about h3 { font-size: 16px; font-weight: 600; margin-bottom: 4px; }
+  .about h3 .en { font-family: var(--mono); font-size: 12px; font-weight: 400; }
+  .about p { font-size: 14px; color: var(--text-dim); margin-top: 10px; }
+  .about p .en { display: block; color: var(--text-faint); font-size: 13px; margin-top: 3px; }
+  .about ul { margin: 12px 0 0 0; padding-left: 18px; }
+  .about li { font-size: 14px; color: var(--text-dim); margin-bottom: 6px; }
+  .about li code, .about p code {
+    font-family: var(--mono); font-size: 12px;
+    background: rgba(45,212,167,0.1); color: var(--accent);
+    padding: 1px 6px; border-radius: 4px;
+  }
+
+  .section-title {
+    font-family: var(--mono); font-size: 13px; letter-spacing: 0.14em;
+    text-transform: uppercase; color: var(--text-faint);
+    margin: 56px 0 24px; display: flex; align-items: center; gap: 14px;
+  }
+  .section-title::after { content: ""; flex: 1; height: 1px; background: var(--border-soft); }
+  .section-title .num {
+    color: var(--accent); border: 1px solid var(--accent-dim);
+    border-radius: 5px; padding: 2px 8px; font-size: 12px;
+  }
+
+  .diagram-card {
+    border: 1px solid var(--border); border-radius: 14px;
+    background: var(--bg-elev); padding: 28px 20px; overflow-x: auto;
+  }
+  .diagram-card svg { display: block; margin: 0 auto; min-width: 560px; }
+  .legend {
+    display: flex; flex-wrap: wrap; gap: 16px; justify-content: center;
+    margin-top: 22px; padding-top: 20px; border-top: 1px solid var(--border-soft);
+  }
+  .legend .item { display: flex; align-items: center; gap: 8px; font-size: 12px; color: var(--text-dim); }
+  .legend .sw { width: 12px; height: 12px; border-radius: 3px; }
+
+  .phase {
+    border: 1px solid var(--border); border-radius: 14px;
+    background: var(--bg-elev); padding: 22px 24px 26px;
+    margin-bottom: 18px; position: relative; overflow: hidden;
+  }
+  .phase::before { content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 3px; }
+  .phase.p1::before { background: var(--blue); }
+  .phase.p2::before { background: var(--accent); }
+  .phase.p3::before { background: var(--purple); }
+  .phase.p4::before { background: var(--coral); }
+  .phase.pg::before { background: var(--green); }
+  .phase-label { font-family: var(--mono); font-size: 12px; letter-spacing: 0.1em; color: var(--text-faint); text-transform: uppercase; margin-bottom: 4px; }
+  .phase-name { font-size: 18px; font-weight: 600; }
+  .phase-name .en { font-family: var(--mono); font-size: 12px; font-weight: 400; margin-left: 8px; }
+  .p1 .phase-name { color: var(--blue); }
+  .p2 .phase-name { color: var(--accent); }
+  .p3 .phase-name { color: var(--purple); }
+  .p4 .phase-name { color: var(--coral); }
+  .pg .phase-name { color: var(--green); }
+  .steps { display: flex; flex-direction: column; gap: 10px; margin-top: 18px; }
+  .step {
+    display: flex; align-items: flex-start; gap: 14px; padding: 12px 14px;
+    background: var(--bg-elev2); border: 1px solid var(--border-soft);
+    border-radius: 9px; transition: border-color 0.18s, transform 0.18s;
+  }
+  .step:hover { border-color: var(--border); transform: translateX(3px); }
+  .step .idx {
+    font-family: var(--mono); font-size: 12px; min-width: 26px; height: 26px;
+    display: grid; place-items: center; border-radius: 6px;
+    background: rgba(255,255,255,0.04); border: 1px solid var(--border);
+    color: var(--text-dim); flex-shrink: 0; margin-top: 1px;
+  }
+  .step .body { flex: 1; }
+  .step .t { font-size: 15px; font-weight: 500; }
+  .step .t .en { font-family: var(--mono); font-size: 11px; color: var(--text-faint); margin-left: 7px; }
+  .step .d { font-size: 13px; color: var(--text-dim); margin-top: 2px; }
+  .step .d code { font-family: var(--mono); font-size: 12px; background: rgba(45,212,167,0.1); color: var(--accent); padding: 1px 6px; border-radius: 4px; }
+  .branch {
+    display: flex; align-items: center; gap: 10px; margin: 12px 0 4px;
+    padding: 12px 14px; border: 1px dashed var(--amber); border-radius: 9px;
+    background: rgba(227,160,8,0.06); font-size: 13px;
+  }
+  .branch .tag { font-family: var(--mono); font-size: 11px; color: var(--amber); border: 1px solid rgba(227,160,8,0.4); padding: 2px 8px; border-radius: 5px; flex-shrink: 0; }
+  .branch.err { border-color: rgba(248,81,73,0.5); background: rgba(248,81,73,0.06); }
+  .branch.err .tag { color: var(--red); border-color: rgba(248,81,73,0.4); }
+  .connector { text-align: center; color: var(--text-faint); font-size: 18px; line-height: 1; padding: 2px 0; }
+
+  .prompt-card { border: 1px solid var(--border); border-radius: 14px; background: var(--bg-elev); margin-bottom: 20px; overflow: hidden; }
+  .prompt-head {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 14px 18px; border-bottom: 1px solid var(--border-soft); background: var(--bg-elev2);
+  }
+  .prompt-head .left { display: flex; align-items: center; gap: 12px; }
+  .prompt-head .dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+  .prompt-head .ttl { font-size: 15px; font-weight: 600; }
+  .prompt-head .ttl .en { font-family: var(--mono); font-size: 11px; font-weight: 400; color: var(--text-faint); margin-left: 7px; }
+  .prompt-head .sub { font-family: var(--mono); font-size: 11px; color: var(--text-faint); }
+  .copy-btn {
+    font-family: var(--mono); font-size: 12px; color: var(--text-dim);
+    background: rgba(255,255,255,0.04); border: 1px solid var(--border);
+    border-radius: 6px; padding: 5px 12px; cursor: pointer;
+    transition: all 0.16s; display: flex; align-items: center; gap: 6px;
+  }
+  .copy-btn:hover { color: var(--accent); border-color: var(--accent-dim); background: rgba(45,212,167,0.08); }
+  .copy-btn.done { color: var(--accent); border-color: var(--accent-dim); }
+  pre {
+    margin: 0; padding: 18px; font-family: var(--mono); font-size: 13px;
+    line-height: 1.65; color: var(--text); white-space: pre-wrap;
+    word-break: break-word; overflow-x: auto;
+  }
+  pre .cmt { color: var(--text-faint); }
+  pre .kw { color: var(--accent); }
+  footer {
+    margin-top: 64px; padding-top: 28px; border-top: 1px solid var(--border-soft);
+    color: var(--text-faint); font-size: 13px; font-family: var(--mono);
+    display: flex; justify-content: space-between; flex-wrap: wrap; gap: 12px;
+  }
+  @media (max-width: 600px) { h1 { font-size: 28px; } .wrap { padding: 0 16px; } }
+</style>
+</head>
+<body>
+<header>
+  <div class="wrap">
+    <div class="eyebrow">Hermes Agent · Skill Spec</div>
+    <h1>專案初始化與<span class="accent">測試監控</span>自動化流程</h1>
+    <div class="h1-en">Project Initialization &amp; Test-Monitoring Workflow</div>
+    <p class="lede">一條從環境檢測、結構掃描、後前端啟動,到 UI 截圖測試與 Channel 回報的完整可復用流程,專為 WSL / Windows 混合開發環境設計。
+      <span class="en">A reusable agent workflow covering environment detection, structure scanning, backend/frontend launch, and UI screenshot test reporting — built for a WSL / Windows hybrid dev environment.</span>
+    </p>
+    <div class="meta-row">
+      <span class="chip">env: <b>4090 WSL Hermes</b></span>
+      <span class="chip">control: <b>opendesk</b></span>
+      <span class="chip">session: <b>tmux</b></span>
+      <span class="chip">channel: <b>Telegram / WhatsApp / Email</b></span>
+    </div>
+  </div>
+</header>
+
+<div class="wrap">
+
+  <div class="about">
+    <h3>關於這份文件 <span class="en">// About this document</span></h3>
+    <p>這是給 AI agent「Hermes」的執行規格書 (skill spec)。它定義了一套標準化流程:當你下達啟動指令時,Hermes 會依序檢測環境、掃描專案結構、啟動服務,並在前端跑起來後自動截圖、寫測試報告、回報給你。
+      <span class="en">This is an execution spec for the AI agent "Hermes". On a launch command, Hermes detects the environment, scans the project structure, starts services, then auto-screenshots the UI, writes a test report, and notifies you.</span>
+    </p>
+    <ul>
+      <li><b>流程圖 / Flow diagram</b> — 一眼看懂四個階段的執行順序與分支判斷。<span class="en">See the four phases and branch logic at a glance.</span></li>
+      <li><b>逐步明細 / Step detail</b> — 每一步對應的指令與檢查點。<span class="en">The command and checkpoint behind each step.</span></li>
+      <li><b>工程提詞 / Engineering prompts</b> — 可直接複製貼給 Hermes 的四段提詞。<span class="en">Four copy-paste prompt blocks ready to hand to Hermes.</span></li>
+    </ul>
+    <p><b>使用方式 / Usage:</b> 把本檔放進專案根目錄(例如 <code>docs/</code>),按階段複製對應提詞給 Hermes 即可。敏感資訊(token、chat_id)請勿寫入,並確認 <code>.gitignore</code> 已套用最後一段規則。
+      <span class="en">Drop this file into your repo (e.g. <code>docs/</code>) and copy each prompt to Hermes by phase. Never commit secrets; make sure the final <code>.gitignore</code> rules are applied.</span>
+    </p>
+  </div>
+
+  <div class="section-title"><span class="num">A</span> 流程圖 · Flow Diagram</div>
+  <div class="diagram-card">
+    <svg viewBox="0 0 600 880" width="100%" xmlns="http://www.w3.org/2000/svg" font-family="'SFMono-Regular', Consolas, monospace">
+      <defs>
+        <marker id="ah" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+          <path d="M2 1L8 5L2 9" fill="none" stroke="#6e7681" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+        </marker>
+        <marker id="ahr" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+          <path d="M2 1L8 5L2 9" fill="none" stroke="#f85149" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+        </marker>
+      </defs>
+
+      <rect x="210" y="20" width="180" height="46" rx="9" fill="#1c2230" stroke="#2a3140"/>
+      <text x="300" y="40" text-anchor="middle" fill="#e6edf3" font-size="14" font-weight="600">開始 · 接收指令</text>
+      <text x="300" y="56" text-anchor="middle" fill="#6e7681" font-size="10">START · receive command</text>
+      <line x1="300" y1="66" x2="300" y2="96" stroke="#6e7681" stroke-width="1.5" marker-end="url(#ah)"/>
+
+      <rect x="120" y="96" width="360" height="92" rx="11" fill="rgba(88,166,255,0.07)" stroke="#58a6ff" stroke-width="0.8"/>
+      <rect x="120" y="96" width="4" height="92" rx="2" fill="#58a6ff"/>
+      <text x="142" y="120" fill="#58a6ff" font-size="11" font-weight="600">PHASE 01</text>
+      <text x="142" y="142" fill="#e6edf3" font-size="14" font-weight="600">環境檢測與路徑確認</text>
+      <text x="142" y="160" fill="#8b949e" font-size="11">Environment detection &amp; path setup</text>
+      <text x="142" y="178" fill="#6e7681" font-size="10">WSL? · 宿主OS · opendesk ×2 · mkdir</text>
+
+      <line x1="300" y1="188" x2="300" y2="214" stroke="#6e7681" stroke-width="1.5" marker-end="url(#ah)"/>
+      <polygon points="300,214 372,244 300,274 228,244" fill="rgba(227,160,8,0.08)" stroke="#e3a008" stroke-width="0.8"/>
+      <text x="300" y="241" text-anchor="middle" fill="#e3a008" font-size="11.5" font-weight="600">opendesk 連線?</text>
+      <text x="300" y="256" text-anchor="middle" fill="#8b949e" font-size="9.5">connection ok?</text>
+
+      <line x1="228" y1="244" x2="120" y2="244" stroke="#f85149" stroke-width="1.3" stroke-dasharray="4 3" marker-end="url(#ahr)"/>
+      <text x="174" y="237" text-anchor="middle" fill="#f85149" font-size="10">fail / 失敗</text>
+      <rect x="20" y="222" width="100" height="44" rx="9" fill="rgba(248,81,73,0.07)" stroke="#f85149" stroke-width="0.8"/>
+      <text x="70" y="240" text-anchor="middle" fill="#f85149" font-size="11" font-weight="600">重新驗證</text>
+      <text x="70" y="255" text-anchor="middle" fill="#8b949e" font-size="9.5">re-pair key</text>
+
+      <line x1="300" y1="274" x2="300" y2="300" stroke="#6e7681" stroke-width="1.5" marker-end="url(#ah)"/>
+      <text x="318" y="290" fill="#8b949e" font-size="10">ok ↓</text>
+
+      <rect x="120" y="300" width="360" height="92" rx="11" fill="rgba(45,212,167,0.07)" stroke="#2dd4a7" stroke-width="0.8"/>
+      <rect x="120" y="300" width="4" height="92" rx="2" fill="#2dd4a7"/>
+      <text x="142" y="324" fill="#2dd4a7" font-size="11" font-weight="600">PHASE 02</text>
+      <text x="142" y="346" fill="#e6edf3" font-size="14" font-weight="600">結構掃描與告知</text>
+      <text x="142" y="364" fill="#8b949e" font-size="11">Structure scan &amp; report</text>
+      <text x="142" y="382" fill="#6e7681" font-size="10">開資料夾 · find 掃描 · 回報摘要</text>
+      <line x1="300" y1="392" x2="300" y2="418" stroke="#6e7681" stroke-width="1.5" marker-end="url(#ah)"/>
+
+      <rect x="120" y="418" width="360" height="92" rx="11" fill="rgba(188,140,255,0.07)" stroke="#bc8cff" stroke-width="0.8"/>
+      <rect x="120" y="418" width="4" height="92" rx="2" fill="#bc8cff"/>
+      <text x="142" y="442" fill="#bc8cff" font-size="11" font-weight="600">PHASE 03</text>
+      <text x="142" y="464" fill="#e6edf3" font-size="14" font-weight="600">自動化執行 · tmux</text>
+      <text x="142" y="482" fill="#8b949e" font-size="11">Automated launch via tmux</text>
+      <text x="142" y="500" fill="#6e7681" font-size="10">後端 + 前端 → logs/ · tail -f</text>
+      <line x1="300" y1="510" x2="300" y2="536" stroke="#6e7681" stroke-width="1.5" marker-end="url(#ah)"/>
+
+      <rect x="120" y="536" width="360" height="92" rx="11" fill="rgba(240,136,62,0.07)" stroke="#f0883e" stroke-width="0.8"/>
+      <rect x="120" y="536" width="4" height="92" rx="2" fill="#f0883e"/>
+      <text x="142" y="560" fill="#f0883e" font-size="11" font-weight="600">PHASE 04</text>
+      <text x="142" y="582" fill="#e6edf3" font-size="14" font-weight="600">測試監控與回報</text>
+      <text x="142" y="600" fill="#8b949e" font-size="11">Test monitoring &amp; reporting</text>
+      <text x="142" y="618" fill="#6e7681" font-size="10">UI 截圖 · test log · 發送 channel</text>
+
+      <line x1="300" y1="628" x2="300" y2="654" stroke="#6e7681" stroke-width="1.5" marker-end="url(#ah)"/>
+      <polygon points="300,654 372,684 300,714 228,684" fill="rgba(227,160,8,0.08)" stroke="#e3a008" stroke-width="0.8"/>
+      <text x="300" y="681" text-anchor="middle" fill="#e3a008" font-size="11.5" font-weight="600">log 有 Error?</text>
+      <text x="300" y="696" text-anchor="middle" fill="#8b949e" font-size="9.5">error found?</text>
+
+      <line x1="228" y1="684" x2="120" y2="684" stroke="#f85149" stroke-width="1.3" stroke-dasharray="4 3" marker-end="url(#ahr)"/>
+      <text x="174" y="677" text-anchor="middle" fill="#f85149" font-size="10">yes / 有</text>
+      <rect x="20" y="662" width="100" height="44" rx="9" fill="rgba(248,81,73,0.07)" stroke="#f85149" stroke-width="0.8"/>
+      <text x="70" y="680" text-anchor="middle" fill="#f85149" font-size="11" font-weight="600">標記用戶</text>
+      <text x="70" y="695" text-anchor="middle" fill="#8b949e" font-size="9.5">@ notify</text>
+
+      <path d="M372 684 H 540 V 582 H 480" fill="none" stroke="#6e7681" stroke-width="1.3" stroke-dasharray="4 3" marker-end="url(#ah)"/>
+      <text x="540" y="640" text-anchor="middle" fill="#8b949e" font-size="10">no · 待命</text>
+      <text x="540" y="654" text-anchor="middle" fill="#6e7681" font-size="9">idle loop</text>
+
+      <line x1="300" y1="714" x2="300" y2="744" stroke="#6e7681" stroke-width="1.5" stroke-dasharray="2 3" marker-end="url(#ah)"/>
+      <rect x="120" y="744" width="360" height="64" rx="11" fill="rgba(126,231,135,0.07)" stroke="#7ee787" stroke-width="0.8"/>
+      <rect x="120" y="744" width="4" height="64" rx="2" fill="#7ee787"/>
+      <text x="142" y="768" fill="#7ee787" font-size="11" font-weight="600">CROSS-CUTTING · 全程</text>
+      <text x="142" y="788" fill="#e6edf3" font-size="13" font-weight="600">.gitignore 保護 / protection</text>
+      <text x="142" y="803" fill="#6e7681" font-size="10">logs/ · printscreen-test/ · env/ · *.db · *.png · *.log · .env</text>
+
+      <text x="300" y="850" text-anchor="middle" fill="#6e7681" font-size="10">虛線 = 分支判斷 / dashed = branch &amp; loop</text>
+    </svg>
+
+    <div class="legend">
+      <span class="item"><span class="sw" style="background:#58a6ff"></span>環境檢測 Env</span>
+      <span class="item"><span class="sw" style="background:#2dd4a7"></span>結構掃描 Scan</span>
+      <span class="item"><span class="sw" style="background:#bc8cff"></span>啟動 Launch</span>
+      <span class="item"><span class="sw" style="background:#f0883e"></span>測試回報 Test</span>
+      <span class="item"><span class="sw" style="background:#e3a008"></span>分支 Branch</span>
+      <span class="item"><span class="sw" style="background:#7ee787"></span>版控保護 VCS</span>
+    </div>
+  </div>
+
+  <div class="section-title"><span class="num">B</span> 逐步明細 · Step Detail</div>
+
+  <div class="phase p1">
+    <div class="phase-label">Phase 01</div>
+    <div class="phase-name">環境檢測與路徑確認<span class="en">Environment detection &amp; path setup</span></div>
+    <div class="steps">
+      <div class="step"><span class="idx">0</span><div class="body"><div class="t">確認專案資料夾位置<span class="en">Locate project folder</span></div><div class="d">定義 <code>PROJECT_ROOT</code>,確認路徑存在</div></div></div>
+      <div class="step"><span class="idx">1</span><div class="body"><div class="t">確認本機是否為 WSL<span class="en">Detect WSL</span></div><div class="d"><code>grep -qEi "(Microsoft|WSL)" /proc/version</code></div></div></div>
+      <div class="step"><span class="idx">2</span><div class="body"><div class="t">偵測宿主作業系統<span class="en">Detect host OS</span></div><div class="d">Windows / macOS / Linux — <code>uname -s</code> + <code>/mnt/c</code></div></div></div>
+      <div class="step"><span class="idx">3</span><div class="body"><div class="t">確認本機端 opendesk<span class="en">Host opendesk</span></div><div class="d">透過 <code>/mnt/c/</code> 確認 binary 可呼叫</div></div></div>
+      <div class="step"><span class="idx">4</span><div class="body"><div class="t">確認 WSL 端 opendesk<span class="en">WSL opendesk</span></div><div class="d">檢查 <code>~/.local/bin/opendesk</code></div></div></div>
+    </div>
+    <div class="branch err"><span class="tag">分支 / branch · 失敗</span><div>連線異常(<code style="font-family:var(--mono);color:var(--red)">static key mismatch</code>)→ 提示重新驗證 pair key,或詢問用戶是否授權直控 PowerShell。<span class="en" style="display:block;color:var(--text-faint);font-size:12px">On connection error, prompt to re-pair, or ask permission for direct PowerShell control.</span></div></div>
+    <div class="steps" style="margin-top:10px">
+      <div class="step"><span class="idx">5</span><div class="body"><div class="t">初始化專案路徑<span class="en">Init paths</span></div><div class="d"><code>mkdir -p logs printscreen-test env</code></div></div></div>
+    </div>
+  </div>
+  <div class="connector">↓</div>
+
+  <div class="phase p2">
+    <div class="phase-label">Phase 02</div>
+    <div class="phase-name">結構掃描與告知<span class="en">Structure scan &amp; report</span></div>
+    <div class="steps">
+      <div class="step"><span class="idx">6</span><div class="body"><div class="t">開啟實體專案資料夾<span class="en">Open folder</span></div><div class="d">讓用戶確認位置(<code>explorer.exe .</code> / open / xdg-open)</div></div></div>
+      <div class="step"><span class="idx">7</span><div class="body"><div class="t">掃描檔名與結構<span class="en">Scan structure</span></div><div class="d"><code>find . -maxdepth 2</code> 篩 package.json / requirements.txt / src</div></div></div>
+      <div class="step"><span class="idx">8</span><div class="body"><div class="t">告知用戶結構摘要<span class="en">Report summary</span></div><div class="d">寫入 <code>project_structure.txt</code> 並回報確認</div></div></div>
+    </div>
+  </div>
+  <div class="connector">↓</div>
+
+  <div class="phase p3">
+    <div class="phase-label">Phase 03</div>
+    <div class="phase-name">自動化執行 · tmux<span class="en">Automated launch</span></div>
+    <div class="steps">
+      <div class="step"><span class="idx">9</span><div class="body"><div class="t">建立 tmux session<span class="en">Create session</span></div><div class="d"><code>dev_$(basename $PROJECT_ROOT)</code> · 分割視窗</div></div></div>
+      <div class="step"><span class="idx">→</span><div class="body"><div class="t">啟動 Backend<span class="en">Start backend</span></div><div class="d">輸出導向 <code>logs/backend.log 2>&1</code></div></div></div>
+      <div class="step"><span class="idx">→</span><div class="body"><div class="t">啟動 Frontend<span class="en">Start frontend</span></div><div class="d">輸出導向 <code>logs/frontend.log 2>&1</code>,完成後開啟前端</div></div></div>
+      <div class="step"><span class="idx">⊟</span><div class="body"><div class="t">同時監看輸出<span class="en">Tail logs</span></div><div class="d"><code>tail -f logs/*.log</code></div></div></div>
+    </div>
+  </div>
+  <div class="connector">↓</div>
+
+  <div class="phase p4">
+    <div class="phase-label">Phase 04</div>
+    <div class="phase-name">測試監控與回報<span class="en">Test monitoring &amp; reporting</span></div>
+    <div class="steps">
+      <div class="step"><span class="idx">①</span><div class="body"><div class="t">UI 截圖<span class="en">Screenshot UI</span></div><div class="d">僅截前端 UI,存入 <code>printscreen-test/</code></div></div></div>
+      <div class="step"><span class="idx">②</span><div class="body"><div class="t">生成 test-screen log<span class="en">Generate test log</span></div><div class="d">檔名 <code>test-screen-日期-時間.log</code>;列出每個組件 ID、interaction、潛在 bug 與注意點</div></div></div>
+      <div class="step"><span class="idx">③</span><div class="body"><div class="t">發送至 Channel<span class="en">Send to channel</span></div><div class="d">透過 Telegram / WhatsApp / Email 把截圖與報告發給用戶</div></div></div>
+    </div>
+    <div class="branch err"><span class="tag">分支 / branch · Error</span><div>log 偵測到 <code style="font-family:var(--mono);color:var(--red)">Error</code> → 在 channel 主動標記用戶;否則進入待命循環。<span class="en" style="display:block;color:var(--text-faint);font-size:12px">If error found, @-notify in channel; otherwise enter idle loop until next test.</span></div></div>
+  </div>
+  <div class="connector">↓</div>
+
+  <div class="phase pg">
+    <div class="phase-label">Cross-cutting · 全程保護</div>
+    <div class="phase-name">版本控制保護<span class="en">Version control protection</span></div>
+    <div class="steps">
+      <div class="step"><span class="idx">✓</span><div class="body"><div class="t">.gitignore 自動補全<span class="en">Auto-fill .gitignore</span></div><div class="d">忽略 <code>logs/</code> · <code>printscreen-test/</code> · <code>env/</code> · <code>*.db</code> · <code>*.jpg/jpeg/png</code> · <code>*.log</code> · <code>.env</code></div></div></div>
+    </div>
+  </div>
+
+  <div class="section-title"><span class="num">C</span> 工程提詞 · Engineering Prompts</div>
+
+  <div class="prompt-card">
+    <div class="prompt-head">
+      <div class="left"><span class="dot" style="background:var(--blue)"></span>
+        <div><div class="ttl">提詞 1 · 環境檢測與初始化<span class="en">Env detect &amp; init</span></div><div class="sub">phase 01 — 02</div></div></div>
+      <button class="copy-btn" onclick="copyPrompt(this)"><span class="ti">複製 Copy</span></button>
+    </div>
+    <pre>你是 Hermes,負責初始化專案。嚴格依序執行,每步回報結果後再進下一步:
+
+<span class="cmt"># 環境檢測</span>
+1. 用 <span class="kw">grep -qEi "(Microsoft|WSL)" /proc/version</span> 判斷是否在 WSL,回報結果。
+2. 偵測宿主系統(uname -s + 是否有 /mnt/c),判斷 Windows / macOS / Linux。
+3. 確認 WSL 端 <span class="kw">~/.local/bin/opendesk</span> 是否存在。
+4. 確認本機端(透過 /mnt/c)opendesk binary 是否可呼叫。
+
+<span class="cmt"># 連線判斷(分支)</span>
+5. 嘗試 opendesk 連線。若出現 static key mismatch 或 404:
+   → 停止,提示我「需要重新驗證 opendesk pair key」,
+   → 並詢問我是否授權你直接用 PowerShell 直控。等我回覆才繼續。
+
+<span class="cmt"># 路徑初始化</span>
+6. 確認 PROJECT_ROOT 路徑存在,cd 進去。
+7. 執行 <span class="kw">mkdir -p logs printscreen-test env</span>。
+
+<span class="cmt"># 結構掃描與告知</span>
+8. 開啟實體專案資料夾讓我看到(WSL 用 explorer.exe .)。
+9. 用 <span class="kw">find . -maxdepth 2 -not -path '*/.*'</span> 掃結構,
+   重點標出 package.json / requirements.txt / main.py / src。
+10. 把結構摘要寫進 project_structure.txt,並用人話回報我確認。
+
+完成後等我說 OK 才進入啟動階段。</pre>
+  </div>
+
+  <div class="prompt-card">
+    <div class="prompt-head">
+      <div class="left"><span class="dot" style="background:var(--purple)"></span>
+        <div><div class="ttl">提詞 2 · tmux 啟動後前端<span class="en">Launch via tmux</span></div><div class="sub">phase 03</div></div></div>
+      <button class="copy-btn" onclick="copyPrompt(this)"><span class="ti">複製 Copy</span></button>
+    </div>
+    <pre>在已初始化的 PROJECT_ROOT 內啟動服務,用 tmux 管理:
+
+1. 建立 session:<span class="kw">SESSION="dev_$(basename $PROJECT_ROOT)"</span>,
+   <span class="kw">tmux new-session -d -s "$SESSION"</span>。
+
+2. 後端視窗:
+   <span class="kw">cd backend && (啟動指令) > ../logs/backend.log 2>&1</span>
+   <span class="cmt"># 啟動指令請依掃描到的結構自動判斷(python main.py / uvicorn / npm 等)</span>
+
+3. 分割視窗開前端:
+   <span class="kw">tmux split-window -h -t "$SESSION"</span>
+   <span class="kw">cd frontend && (啟動指令) > ../logs/frontend.log 2>&1</span>
+
+4. 確認兩個服務都起來後,開啟前端頁面給我看,
+   並用 <span class="kw">tail -f logs/*.log</span> 同時監看輸出。
+
+注意:logs 子資料夾若不存在要先建立。若任一服務啟動報錯,
+立即把對應 log 的錯誤段落貼給我,先別繼續。</pre>
+  </div>
+
+  <div class="prompt-card">
+    <div class="prompt-head">
+      <div class="left"><span class="dot" style="background:var(--coral)"></span>
+        <div><div class="ttl">提詞 3 · UI 截圖測試與回報<span class="en">UI test &amp; report</span></div><div class="sub">phase 04</div></div></div>
+      <button class="copy-btn" onclick="copyPrompt(this)"><span class="ti">複製 Copy</span></button>
+    </div>
+    <pre>前端起來後,執行 UI 測試與回報:
+
+1. 對前端 UI 截圖(只截 UI 畫面),
+   存成 <span class="kw">printscreen-test/screen-YYYYMMDD-HHMMSS.png</span>。
+
+2. 生成分析報告 <span class="kw">logs/test-screen-YYYYMMDD-HHMMSS.log</span>,
+   開頭說明這個 UI 有哪些組件,內容包含:
+   - 每個組件給一個 id(如 header-main、content-grid)
+   - 每個組件可能出現的 interaction
+   - 潛在 bug 與要注意的地方
+
+3. 把截圖 + 報告透過現有 channel 發給我
+   (Telegram / WhatsApp / Email 擇一)。
+
+4. 掃描 logs 內是否出現 Error 關鍵字:
+   → 有:在 channel 主動標記我;
+   → 無:進入待命,等我下次說 test 再跑一輪。</pre>
+  </div>
+
+  <div class="prompt-card">
+    <div class="prompt-head">
+      <div class="left"><span class="dot" style="background:var(--green)"></span>
+        <div><div class="ttl">提詞 4 · .gitignore 保護<span class="en">VCS protection</span></div><div class="sub">cross-cutting</div></div></div>
+      <button class="copy-btn" onclick="copyPrompt(this)"><span class="ti">複製 Copy</span></button>
+    </div>
+    <pre>在 PROJECT_ROOT 檢查 .gitignore,若以下規則缺少就補全
+(不要重複加入已存在的規則):
+
+<span class="cmt"># --- Auto Generated Rules ---</span>
+/logs/
+/printscreen-test/
+/env/
+*.db
+*.jpg
+*.jpeg
+*.png
+*.log
+.env
+<span class="cmt"># ----------------------------</span>
+
+補完後回報哪些規則是新增的、哪些原本已存在。</pre>
+  </div>
+
+  <footer>
+    <span>// hermes_project_init_flow</span>
+    <span>generated for 4090 WSL Hermes</span>
+  </footer>
+
+</div>
+
+<script>
+  function copyPrompt(btn) {
+    const pre = btn.closest('.prompt-card').querySelector('pre');
+    const text = pre.innerText;
+    navigator.clipboard.writeText(text).then(() => {
+      const span = btn.querySelector('.ti');
+      const orig = span.textContent;
+      span.textContent = '已複製 Copied ✓';
+      btn.classList.add('done');
+      setTimeout(() => { span.textContent = orig; btn.classList.remove('done'); }, 1600);
+    });
+  }
+</script>
+</body>
+</html>
